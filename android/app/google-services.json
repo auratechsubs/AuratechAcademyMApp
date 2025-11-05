@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "488912064599",
+    "project_id": "auratech-academy-58d74",
+    "storage_bucket": "auratech-academy-58d74.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:488912064599:android:99151782386653ff2bd312",
+        "android_client_info": {
+          "package_name": "com.example.auratech_academy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "488912064599-gkpdopd43vmunq7gbm9bo77reum1rk76.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.auratech_academy",
+            "certificate_hash": "709ae16470156fc71c0e81869c5c08134da49ac3"
+          }
+        },
+        {
+          "client_id": "488912064599-aab3518c64b0rv51as3jchls7i1vivpk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAadNbQIK6IMdwtTo15aO-rno3wCMei34Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "488912064599-aab3518c64b0rv51as3jchls7i1vivpk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "488912064599-uh37l3suen7tfrnriai66jm58a8pje48.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.auratechAcademy"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
