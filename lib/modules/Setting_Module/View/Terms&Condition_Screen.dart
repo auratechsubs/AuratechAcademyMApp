@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../constant/constant_colors.dart';
 
@@ -15,7 +16,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         title: Text(
-          "Terms & Conditions",
+          "settings_terms".tr,
           style: GoogleFonts.roboto(
             fontSize: isTablet ? 22 : 20,
             fontWeight: FontWeight.bold,
@@ -96,7 +97,8 @@ class TermsAndConditionsScreen extends StatelessWidget {
 
   Widget _sectionTitle(String title, bool isTablet) {
     return Padding(
-      padding: EdgeInsets.only(top: isTablet ? 24 : 20, bottom: isTablet ? 10 : 8),
+      padding:
+          EdgeInsets.only(top: isTablet ? 24 : 20, bottom: isTablet ? 10 : 8),
       child: Text(
         title,
         style: GoogleFonts.roboto(

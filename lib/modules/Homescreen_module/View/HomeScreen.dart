@@ -1,4 +1,3 @@
-
 import 'package:auratech_academy/modules/Category_module/Controller/Category_controller.dart';
 import 'package:auratech_academy/modules/Mentor_module/Controller/Mentor_Controller.dart';
 import 'package:auratech_academy/utils/storageservice.dart';
@@ -68,22 +67,22 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Map<String, dynamic>> _features = [
     {
       'icon': Icons.live_tv_rounded,
-      'title': 'Live Classes',
+      'title': 'live_classes'.tr,
       'subtitle': 'Interactive live sessions with mentors'
     },
     {
       'icon': Icons.assignment_turned_in_rounded,
-      'title': 'Assignments',
+      'title': 'assignments'.tr,
       'subtitle': 'Regular practice assignments'
     },
     {
       'icon': Icons.workspace_premium_rounded,
-      'title': 'Certification',
+      'title': 'cirtifications'.tr,
       'subtitle': 'Industry recognized certificates'
     },
     {
       'icon': Icons.support_agent_rounded,
-      'title': '24/7 Support',
+      'title': '24/7_support'.tr,
       'subtitle': 'Always available for help'
     },
   ];
@@ -125,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(height: isTablet ? 12 : 8),
                     Text(
-                      "What would you like to learn today?",
+                      "like_to_learn".tr,
                       style: TextStyle(
                         fontSize: isTablet ? 16 : 14,
                         color: AppColors.textSecondary,
@@ -138,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         MaterialPageRoute(builder: (_) => SearchScreen()),
                       ),
                       decoration: InputDecoration(
-                        hintText: "Find your course here...",
+                        hintText: "find_course_here".tr,
                         hintStyle: TextStyle(fontSize: isTablet ? 16 : 14),
                         suffixIcon: Icon(
                           Icons.search,
@@ -244,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 top: screenHeight * 0.02,
                                 right: screenWidth * 0.025,
                                 child: TagWidget(
-                                  label: "Lifetime Access",
+                                  label: "lifetime_access".tr,
                                   bgColor: Colors.green,
                                   fontSize: screenWidth * 0.03,
                                 ),
@@ -282,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    "Enroll Now",
+                                    "enroll_now".tr,
                                     style: TextStyle(
                                       fontSize: isTablet ? 14 : 12,
                                       fontWeight: FontWeight.bold,
@@ -374,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Categories",
+                          "categories".tr,
                           style: TextStyle(
                             fontSize: isTablet ? 20 : 18,
                             fontWeight: FontWeight.bold,
@@ -387,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             MaterialPageRoute(builder: (_) => CategoryScreen()),
                           ),
                           child: Text(
-                            "See all",
+                            "see_all".tr,
                             style: TextStyle(
                               fontSize: isTablet ? 16 : 14,
                               color: AppColors.primary,
@@ -457,36 +456,42 @@ class _HomeScreenState extends State<HomeScreen> {
                     SizedBox(
                       height: 10,
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Popular Courses",
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "popular_courses".tr,
                           style: TextStyle(
                             fontSize: isTablet ? 20 : 18,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
+                            overflow: TextOverflow.ellipsis,
                           ),
+                          maxLines: 1,
                         ),
-                        InkWell(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PopularCoursesScreen(
-                                courses: popularCourse_controller.courseList,
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            "See all",
-                            style: TextStyle(
-                              fontSize: isTablet ? 16 : 14,
-                              color: AppColors.primary,
+                      ),
+                      InkWell(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PopularCoursesScreen(
+                              courses: popularCourse_controller.courseList,
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                        child: Text(
+                          "see_all".tr,
+                          style: TextStyle(
+                            fontSize: isTablet ? 16 : 14,
+                            color: AppColors.primary,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
                     SizedBox(height: isTablet ? 16 : 20),
                     _buildCourseTabs(isTablet),
                     SizedBox(height: isTablet ? 16 : 20),
@@ -561,36 +566,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Recommended Courses",
-                          style: TextStyle(
-                            fontSize: isTablet ? 20 : 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
+                  Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "recommended_courses".tr,
+                        style: TextStyle(
+                          fontSize: isTablet ? 20 : 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        InkWell(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PopularCoursesScreen(
-                                courses: popularCourse_controller.courseList,
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            "See all",
-                            style: TextStyle(
-                              fontSize: isTablet ? 16 : 14,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ],
+                        maxLines: 1,
+                      ),
                     ),
+                    InkWell(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PopularCoursesScreen(
+                            courses: popularCourse_controller.courseList,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        "see_all".tr,
+                        style: TextStyle(
+                          fontSize: isTablet ? 16 : 14,
+                          color: AppColors.primary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
                     SizedBox(height: isTablet ? 16 : 12),
                     Obx(() {
                       if (popularCourse_controller.isLoading.value) {
@@ -666,15 +677,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     // 🔹 Header Row
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
+                      child:
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            "Upcoming Webinars",
-                            style: TextStyle(
-                              fontSize: isTablet ? 20 : 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+                          Expanded(
+                            child: Text(
+                              "upcoming_webinars".tr,
+                              style: TextStyle(
+                                fontSize: isTablet ? 20 : 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              maxLines: 1,
                             ),
                           ),
                           InkWell(
@@ -687,12 +703,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             child: Text(
-                              "See all",
+                              "see_all".tr,
                               style: TextStyle(
                                 fontSize: isTablet ? 16 : 14,
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w600,
+                                overflow: TextOverflow.ellipsis,
                               ),
+                              maxLines: 1,
                             ),
                           ),
                         ],
@@ -755,36 +773,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Top Mentors",
-                          style: TextStyle(
-                            fontSize: isTablet ? 20 : 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
+                  Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "top_mentors".tr,
+                        style: TextStyle(
+                          fontSize: isTablet ? 20 : 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        InkWell(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => TopMentorsScreen(
-                                mentors: mentor_controller.mentorList,
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            "See all",
-                            style: TextStyle(
-                              fontSize: isTablet ? 16 : 14,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ],
+                        maxLines: 1,
+                      ),
                     ),
+                    InkWell(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => TopMentorsScreen(
+                            mentors: mentor_controller.mentorList,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        "see_all".tr,
+                        style: TextStyle(
+                          fontSize: isTablet ? 16 : 14,
+                          color: AppColors.primary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
                     SizedBox(height: isTablet ? 16 : 12),
                     Obx(() {
                       if (mentor_controller.isLoading.value) {
@@ -981,7 +1005,6 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildTrendingTechSection(isTablet),
               _buildSuccessStoriesSection(isTablet),
 
-
               // Gallery Section
               Padding(
                 padding: EdgeInsets.symmetric(
@@ -991,7 +1014,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Our Gallery",
+                      "our_galery".tr,
                       style: TextStyle(
                         fontSize: isTablet ? 20 : 18,
                         fontWeight: FontWeight.bold,
@@ -1263,7 +1286,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.only(bottom: 20),
             child: Text(
-              'Browse by domains',
+              'browse_by_domain'.tr,
               style: TextStyle(
                 fontSize: isTablet ? 28 : 24,
                 fontWeight: FontWeight.w700,
@@ -1415,7 +1438,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           Text(
-            "🚀 Why Thousands Choose AuraTech",
+            "why_choose_us".tr,
             style: TextStyle(
               fontSize: isTablet ? 24 : 20,
               fontWeight: FontWeight.bold,
@@ -1425,7 +1448,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           SizedBox(height: isTablet ? 8 : 4),
           Text(
-            "Join our growing community of successful learners",
+            "join_our_growing_community".tr,
             style: TextStyle(
               fontSize: isTablet ? 16 : 14,
               color: AppColors.textSecondary,
@@ -1449,7 +1472,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatItem(String number, String label, IconData icon, bool isTablet) {
+  Widget _buildStatItem(
+      String number, String label, IconData icon, bool isTablet) {
     return Container(
       width: isTablet ? 150 : 130,
       padding: EdgeInsets.all(isTablet ? 20 : 16),
@@ -1507,34 +1531,40 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "💫 What Makes Us Different",
-                style: TextStyle(
-                  fontSize: isTablet ? 22 : 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
+        Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              "what_make_different".tr,
+              style: TextStyle(
+                fontSize: isTablet ? 22 : 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+                overflow: TextOverflow.ellipsis,
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  "Premium Features",
-                  style: TextStyle(
-                    fontSize: isTablet ? 14 : 12,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+              maxLines: 1,
+            ),
           ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              "premium_features".tr,
+              style: TextStyle(
+                fontSize: isTablet ? 14 : 12,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+                overflow: TextOverflow.ellipsis,
+              ),
+              maxLines: 1,
+            ),
+          ),
+        ],
+      ),
           SizedBox(height: isTablet ? 16 : 12),
           GridView.builder(
             shrinkWrap: true,
@@ -1565,7 +1595,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -1575,7 +1604,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
             border: Border.all(
-              color:  AppColors.primaryDark,
+              color: AppColors.primaryDark,
               width: 1,
             ),
           ),
@@ -1986,39 +2015,47 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "🌟 Success Stories",
-                style: TextStyle(
-                  fontSize: isTablet ? 22 : 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
+        Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              "success_stories".tr,
+              style: TextStyle(
+                fontSize: isTablet ? 22 : 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+                overflow: TextOverflow.ellipsis,
               ),
-              InkWell(
-                onTap: () {
-                  // TODO: View all success stories
-                },
-                child: Row(
-                  children: [
-                    Text(
-                      "View All",
-                      style: TextStyle(
-                        fontSize: isTablet ? 16 : 14,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(Icons.arrow_forward_ios_rounded,
-                        size: isTablet ? 16 : 14, color: AppColors.primary),
-                  ],
-                ),
-              ),
-            ],
+              maxLines: 1,
+            ),
           ),
+          InkWell(
+            onTap: () {
+              // TODO: View all success stories
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min, // 👈 important: shrink-wraps the right row
+              children: [
+                Text(
+                  "see_all".tr,
+                  style: TextStyle(
+                    fontSize: isTablet ? 16 : 14,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: isTablet ? 16 : 14,
+                  color: AppColors.primary,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
           SizedBox(height: isTablet ? 16 : 12),
           SizedBox(
             height: isTablet ? 280 : 250,
@@ -2039,15 +2076,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-   Widget _buildSuccessStoryCard(Map<String, dynamic> story, bool isTablet) {
+  Widget _buildSuccessStoryCard(Map<String, dynamic> story, bool isTablet) {
     return Container(
       width: isTablet ? 300 : 280,
       margin: EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(21),
-        border: Border.all(color: AppColors.primary,width: 1)
-       ),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(21),
+          border: Border.all(color: AppColors.primary, width: 1)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2169,46 +2205,45 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
   Widget _buildTrendingTechSection(bool isTablet) {
     final trendingTech = [
       {
-        'name': 'Flutter',
+        'name': 'flutter'.tr,
         'icon': '🎯',
         'growth': '+35%',
         'color': Colors.blue,
         'courses': 12
       },
       {
-        'name': 'AI/ML',
+        'name': 'ai_ml'.tr,
         'icon': '🤖',
         'growth': '+42%',
         'color': Colors.green,
         'courses': 18
       },
       {
-        'name': 'Web3',
+        'name': 'web3'.tr,
         'icon': '⛓️',
         'growth': '+28%',
         'color': Colors.purple,
         'courses': 8
       },
       {
-        'name': 'Cloud',
+        'name': 'cloud'.tr,
         'icon': '☁️',
         'growth': '+31%',
         'color': Colors.orange,
         'courses': 15
       },
       {
-        'name': 'Cybersecurity',
+        'name': 'cyber_security'.tr,
         'icon': '🔒',
         'growth': '+25%',
         'color': Colors.red,
         'courses': 10
       },
       {
-        'name': 'Data Science',
+        'name': 'data_science'.tr,
         'icon': '📊',
         'growth': '+38%',
         'color': Colors.teal,
@@ -2223,7 +2258,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "🔥 Trending Technologies",
+            "treding_technologies".tr,
             style: TextStyle(
               fontSize: isTablet ? 22 : 18,
               fontWeight: FontWeight.bold,
@@ -2232,7 +2267,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           SizedBox(height: isTablet ? 8 : 4),
           Text(
-            "Most in-demand skills in 2024",
+            "most_in_demand_skillls_in_2025".tr,
             style: TextStyle(
               fontSize: isTablet ? 16 : 14,
               color: AppColors.textSecondary,
@@ -2321,7 +2356,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontSize: isTablet ? 16 : 14,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
+
                     ),
+                    maxLines: 1,
                   ),
                   SizedBox(height: 4),
                   Text(
@@ -2345,8 +2382,7 @@ class _HomeScreenState extends State<HomeScreen> {
       width: double.infinity,
       padding:
           EdgeInsets.symmetric(vertical: 40, horizontal: isTablet ? 24 : 16),
-      decoration: BoxDecoration(
-       ),
+      decoration: BoxDecoration(),
       child: Column(
         children: [
           Container(
@@ -2365,7 +2401,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Column(
               children: [
-                Text("${"“Theory se zyada, hum practice pe believe karte hain.”"}",
+                Text(
+                  "“Theory se zyada, hum practice pe believe karte hain.”",
                   style: TextStyle(
                     fontSize: isTablet ? 16 : 14,
                     fontStyle: FontStyle.italic,
@@ -2399,8 +2436,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                      onPressed: () {
-                       },
+                      onPressed: () {},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: EdgeInsets.symmetric(
@@ -2454,7 +2490,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
- class Domain {
+class Domain {
   final String title;
   final IconData icon;
   final Color backgroundColor;
@@ -2556,7 +2592,7 @@ class SkillItem {
   SkillItem({required this.icon, required this.label, this.onTap});
 }
 
- class ModernSkillsSection extends StatelessWidget {
+class ModernSkillsSection extends StatelessWidget {
   const ModernSkillsSection({
     super.key,
     required this.items,
@@ -2622,7 +2658,7 @@ class SkillItem {
   }
 }
 
- class _LeftTextBlock extends StatelessWidget {
+class _LeftTextBlock extends StatelessWidget {
   const _LeftTextBlock({
     required this.titleKicker,
     required this.title,
@@ -2695,7 +2731,7 @@ extension _Subtitle on Column {
   }
 }
 
- class _RightPillsGrid extends StatelessWidget {
+class _RightPillsGrid extends StatelessWidget {
   const _RightPillsGrid({required this.items});
 
   final List<SkillItem> items;
@@ -2719,7 +2755,7 @@ extension _Subtitle on Column {
   }
 }
 
- class _SkillPill extends StatefulWidget {
+class _SkillPill extends StatefulWidget {
   const _SkillPill({required this.item});
   final SkillItem item;
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../constant/constant_colors.dart';
 
@@ -15,7 +16,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         title: Text(
-          "Privacy Policy",
+          "settings_privacy".tr,
           style: GoogleFonts.lato(
             fontSize: isTablet ? 22 : 20,
             fontWeight: FontWeight.bold,

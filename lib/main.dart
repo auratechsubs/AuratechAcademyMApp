@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:get_storage/get_storage.dart';
 
 import 'Core/app_bindings.dart';
 import 'Core/app_theme.dart';
+import 'app/controllers/localization_controller.dart';
+import 'app/localization/app_translations.dart';
 import 'firebase_options.dart';
 import 'modules/Introduction_module/View/Splash_Screen.dart';
 import 'utils/storageservice.dart';
@@ -19,6 +22,7 @@ Future<void> _bootstrap() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await StorageService.init();
+  await GetStorage.init();
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarBrightness: Brightness.dark,
@@ -41,6 +45,7 @@ void main() {
       debugPrint('$stack');
       return true;
     };
+    Get.put(LocalizationController(), permanent: true);
 
     runApp(const MyApp());
   }, (error, stack) {
@@ -54,21 +59,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Aura Tech Academy',
-      theme: AppTheme.light,
-      initialBinding: AppBindings(),
-      home: const SplashScreen(),
-      defaultTransition: Transition.cupertino,
-      transitionDuration: const Duration(milliseconds: 220),
-      scrollBehavior: const MaterialScrollBehavior().copyWith(
-        dragDevices: {
-          PointerDeviceKind.touch,
-          PointerDeviceKind.mouse,
-          PointerDeviceKind.trackpad,
-        },
-      ),
-    );
+    final loc = Get.find<LocalizationController>();
+
+    return Obx(() => GetMaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Aura Tech Academy',
+          translations: AppTranslations(),
+          locale: loc.locale,
+          fallbackLocale: AppTranslations.defaultLocale,
+          theme: AppTheme.light,
+          initialBinding: AppBindings(),
+          home: const SplashScreen(),
+          defaultTransition: Transition.cupertino,
+          transitionDuration: const Duration(milliseconds: 220),
+          scrollBehavior: const MaterialScrollBehavior().copyWith(
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.trackpad,
+            },
+          ),
+        ));
   }
 }

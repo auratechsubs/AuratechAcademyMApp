@@ -1,0 +1,188 @@
+final Map<String, String> enUS = {
+  // Common / UI
+  'app_name': 'Auratech Academy',
+  'ok': 'OK', 'cancel': 'Cancel', 'retry': 'Retry',
+  'yes': 'Yes', 'no': 'No',
+  'save': 'Save', 'update': 'Update', 'delete': 'Delete',
+  'edit': 'Edit', 'close': 'Close', 'back': 'Back',
+  'search': 'Search', 'clear': 'Clear', 'apply': 'Apply',
+  'next': 'Next', 'previous': 'Previous', 'continue': 'Continue',
+  'loading': 'Loading...', 'success': 'Success', 'failed': 'Failed',
+  'offline': 'You are offline', 'try_again': 'Try again',
+  'no_results': 'No results found', 'coming_soon': 'Coming soon',
+
+  // Onboarding
+  'onb_title_1': 'Learn Anywhere',
+  'onb_desc_1': 'Bite-size lessons crafted for busy minds.',
+  'onb_title_2': 'Track Progress',
+  'onb_desc_2': 'See your streaks, badges, and ranks grow.',
+  'onb_title_3': 'Get Certified',
+  'onb_desc_3': 'Finish courses and earn shareable certificates.',
+
+  // Home / Nav
+  'home_title': 'Courses',
+  'Setting_title': 'Settings',
+  'nav_home': 'Home', 'nav_explore': 'Explore', 'nav_my_courses': 'My Courses',
+  'nav_downloads': 'Downloads', 'nav_profile': 'Profile',
+  'nav_settings': 'Settings',
+  'welcome_user': 'Welcome, @name!',
+  'start_learning': 'Start Learning',
+
+  // Auth
+  'login': 'Login', 'logout': 'Logout', 'signup': 'Sign up',
+  'email': 'Email', 'password': 'Password',
+  'confirm_password': 'Confirm password',
+  'forgot_password': 'Forgot password?', 'reset_password': 'Reset password',
+  'or_continue_with': 'Or continue with',
+  'invalid_email': 'Please enter a valid email',
+  'password_mismatch': 'Passwords do not match',
+  'password_min': 'Password must be at least @min characters',
+  'field_required': 'This field is required',
+
+  // Settings
+  'settings_language': 'Language',
+  'settings_theme': 'Theme',
+  'settings_dark_mode': 'Dark mode',
+  'settings_notifications': 'Notifications',
+  'settings_account': 'Account',
+  'settings_privacy': 'Privacy',
+  'settings_help': 'Help & Support',
+  'settings_feedback': 'Feedback',
+  'settings_terms': 'Terms & Conditions',
+  'settings_about': 'About',
+  'logout_confirm_title': 'Logout Confirmation',
+  'logout_confirm_body': 'Are you sure you want to logout?',
+
+  // Profile
+  'profile_title': 'Profile',
+  'name': 'Name', 'phone': 'Phone', 'gender': 'Gender',
+  'dob': 'Date of birth', 'language': 'Language',
+  'update_profile': 'Update profile',
+  'delete_account': 'Delete account',
+  'delete_confirm': 'This action cannot be undone. Continue?',
+
+  // Course list / detail
+  'courses_title': 'All Courses',
+  'course_levels': 'Levels',
+  'level_beginner': 'Beginner', 'level_intermediate': 'Intermediate',
+  'level_advanced': 'Advanced',
+  'duration': 'Duration', 'lessons': 'Lessons', 'hours': 'hours',
+  'continue_course': 'Continue course',
+  'download_resources': 'Download resources',
+  'instructor': 'Instructor', 'language_of_course': 'Language',
+  'updated_on': 'Updated on @date',
+  'you_have_x_courses': 'You have @count courses.',
+
+  // Lesson player
+  'now_playing': 'Now playing',
+  'mark_complete': 'Mark complete',
+  'completed': 'Completed',
+  'auto_play': 'Autoplay',
+  'captions': 'Captions',
+  'notes': 'Notes', 'add_note': 'Add note', 'save_note': 'Save note',
+
+  // Quiz / assessment
+  'quiz': 'Quiz', 'start_quiz': 'Start quiz', 'submit_quiz': 'Submit',
+  'question': 'Question', 'correct': 'Correct', 'incorrect': 'Incorrect',
+  'score': 'Score', 'your_score': 'Your score: @score%',
+  'review_answers': 'Review answers',
+
+  // Certificates
+  'certificate': 'Certificate',
+  'download_certificate': 'Download certificate',
+  'share_certificate': 'Share certificate',
+
+  // Payments / plans
+  'pricing': 'Pricing',
+  'buy_now': 'Buy now',
+  'subscribe': 'Subscribe',
+  'one_time': 'One-time',
+  'monthly': 'Monthly', 'yearly': 'Yearly',
+  'apply_coupon': 'Apply coupon',
+  'payment_success': 'Payment successful',
+  'payment_failed': 'Payment failed',
+  'restore_purchases': 'Restore purchases',
+
+  // Notifications
+  'notif_new_lesson': 'New lesson unlocked',
+  'notif_course_update': 'Course updated',
+  'notif_reminder': 'Your learning reminder',
+
+  // Errors
+  'network_error': 'Network error',
+  'server_error': 'Server error',
+  'unknown_error': 'Something went wrong',
+
+  // Media / Upload
+  'camera': 'Camera', 'gallery': 'Gallery', 'upload': 'Upload',
+
+  // Accessibility
+  'a11y_increase_text': 'Increase text size',
+  'a11y_decrease_text': 'Decrease text size',
+  //profile locale added
+  "order_history": "Order History",
+  'order_id': 'Order ID:',
+  'order_name': 'Order Name:',
+  'order_date': 'Date:',
+  'billing_name': 'Billing Name:',
+  'total_qty': 'Total Qty:',
+  'total_amount': 'Total Amount:',
+
+  'contact_us': 'Contact Us',
+  'email_support': 'Email Support',
+  'call_support': 'Call Support',
+  'faq_title': 'Frequently Asked Questions',
+
+  'rate_experience': 'Rate your experience',
+  'your_feedback': 'Your Feedback',
+  'feedback_hint': 'Write your feedback here...',
+  'blog_title': 'Blog',
+  'read_more': 'Read More',
+  'read_leas': "Read Less",
+  'my_courses_cart': 'My Courses Cart',
+  'continue_shopping': 'Continue Shopping',
+  'proceed_to_checkout': 'Proceed to Checkout',
+  'your_cart_is_empty': 'Your cart is empty',
+//   fro home screen locale
+  'like_to_learn': 'What would you like to learn today?',
+  'find_course_here': 'Find your course here...',
+  'lifetime_access': 'Lifetime Access',
+  'certified_courses': 'Certified Courses',
+  'live_at': 'Live at',
+  'upcoming_live_classes': 'Upcoming Live Classes',
+  'enroll_now': 'Enroll now',
+  'enrolled': 'Enrolled',
+  'categories': 'Categories',
+  'see_all': 'See All',
+  'popular_courses': 'Popular Courses',
+  'recommended_courses': 'Recommended Courses',
+  'browse_by_domain': 'Browse by Domain',
+  'upcoming_webinars': 'Upcoming Webinars',
+  'register_now': 'Register Now',
+  'top_mentors': 'Top Mentors',
+  'Master_skills_from': 'Master skills. Build a Career.',
+  'modern_skills': 'Modern skills for Modern Careers.',
+  'what_make_different': 'What makes us different?',
+  'premium_features': 'Premium Features',
+  'live_classes': 'Live Classes',
+  'assignments': 'Assignments',
+  'cirtifications': 'Certifications',
+  '24/7_support': '24/7 Support',
+  'why_choose_us': 'Why thousands of students choose Auratech?',
+  'join_our_growing_community': 'Join our growing community of successful learners!',
+  'students_enrolled': 'Students Enrolled',
+  'expert_mentors': 'Expert Mentors',
+  'courses': 'Courses',
+  'success_rate': 'Success Rate',
+  'treding_technologies': 'Trending Technologies',
+  'most_in_demand_skillls_in_2025': 'Most in-demand skills in 2025',
+  'flutter': 'Flutter',
+  'ai_ml': 'AI & ML',
+  'web3': 'Web3',
+  'cloud': 'Cloud',
+  'cyber_security': 'Cyber Security',
+  'data_science': 'Data Science',
+  'success_stories': 'Success Stories',
+  'our_galery': 'Our Gallery',
+
+};

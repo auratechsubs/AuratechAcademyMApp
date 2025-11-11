@@ -1,4 +1,5 @@
 import 'package:auratech_academy/modules/Authentication_module/View/LoginScreen.dart';
+import 'package:auratech_academy/modules/Setting_Module/View/LanguageswitchSheet.dart';
 import 'package:auratech_academy/modules/Setting_Module/View/Profile_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,6 +13,7 @@ import 'Feedback_screen.dart';
 import 'HelpAndSupport_Screen.dart';
 import 'Privacy_Policy_Screen.dart';
 import 'Terms&Condition_Screen.dart';
+import '../../../app/controllers/localization_controller.dart'; // make sure path ok
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -22,134 +24,142 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final GoogleSigninController googleLoginController = Get.find();
+  final loc = Get.find<LocalizationController>();
 
-  final List<_SettingItem> settings = [
-    _SettingItem("Account", Icons.person),
-    _SettingItem("Privacy", Icons.lock),
-    _SettingItem("Help & Support", Icons.help_outline),
-    _SettingItem("Feedback", Icons.feedback),
-    _SettingItem("Terms & Conditions", Icons.description),
-    _SettingItem("Logout", Icons.logout, isDestructive: true),
+  // ✅ keep keys here (NO .tr)
+  final List<_SettingItem> settings = const [
+    _SettingItem('settings_account', Icons.person),
+    _SettingItem('settings_language', Icons.language),
+    _SettingItem('settings_privacy', Icons.lock),
+    _SettingItem('settings_help', Icons.help_outline),
+    _SettingItem('settings_feedback', Icons.feedback),
+    _SettingItem('settings_terms', Icons.description),
+    _SettingItem('logout', Icons.logout, isDestructive: true),
   ];
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.width > 600;
+    // ✅ react to locale changes; rebuilding this widget tree instantly
+    return Obx(() {
+      final _ = loc.locale; // establishes reactive dependency
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
+      final size = MediaQuery.of(context).size;
+      final isTablet = size.width > 600;
 
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: Text(
-          "Settings",
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          centerTitle: true,
+          title: Text('Setting_title'.tr),
         ),
+        body: ListView.separated(
+          padding: EdgeInsets.all(isTablet ? 32 : 20),
+          itemCount: settings.length,
+          separatorBuilder: (context, index) => Divider(
+            color: AppColors.textSecondary,
+            height: isTablet ? 20 : 16,
+          ),
+          itemBuilder: (context, index) {
+            final item = settings[index];
 
-      ),
-      body: ListView.separated(
-        padding: EdgeInsets.all(isTablet ? 32 : 20),
-        itemCount: settings.length,
-        separatorBuilder: (context, index) => Divider(
-          color: AppColors.textSecondary,
-          height: isTablet ? 20 : 16,
-        ),
-        itemBuilder: (context, index) {
-          final item = settings[index];
-          return InkWell(
-            onTap: () => _navigateToSettingScreen(context, index),
-            child: Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListTile(
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 16 : 12,
-                  vertical: isTablet ? 8 : 4,
+            // 👀 subtitle only for language row
+            Widget? subtitle;
+            if (item.titleKey == 'settings_language') {
+              final current = Get.locale ?? const Locale('en', 'US');
+              subtitle = Text(
+                _localeLabelFromI18n(current), // uses i18n keys below
+                style: GoogleFonts.roboto(
+                  fontSize: isTablet ? 14 : 12,
+                  color: AppColors.textSecondary,
                 ),
-                leading: CircleAvatar(
-                  backgroundColor: AppColors.primary,
-                  radius: isTablet ? 24 : 20,
-                  child: Icon(
-                    item.icon,
-                    color: Colors.white,
-                    size: isTablet ? 24 : 20,
+              );
+            }
+
+            return InkWell(
+              onTap: () => _navigateToSettingScreen(context, index),
+              child: Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 16 : 12,
+                    vertical: isTablet ? 8 : 4,
+                  ),
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.primary,
+                    radius: isTablet ? 24 : 20,
+                    child: Icon(
+                      item.icon,
+                      color: Colors.white,
+                      size: isTablet ? 24 : 20,
+                    ),
+                  ),
+                  // ✅ translate at render time
+                  title: Text(
+                    item.titleKey.tr,
+                    style: GoogleFonts.roboto(
+                      fontSize: isTablet ? 18 : 16,
+                      fontWeight: FontWeight.w600,
+                      color: item.isDestructive ? Colors.red : AppColors.textPrimary,
+                    ),
+                  ),
+                  subtitle: subtitle,
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                    color: Colors.blue,
                   ),
                 ),
-                title: Text(
-                  item.title,
-                  style: GoogleFonts.roboto(
-                    fontSize: isTablet ? 18 : 16,
-                    fontWeight: FontWeight.w600,
-                    color:
-                        item.isDestructive ? Colors.red : AppColors.textPrimary,
-                  ),
-                ),
-                trailing: Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: isTablet ? 20 : 16,
-                  color: AppColors.primary,
-                ),
               ),
-            ),
-          );
-        },
-      ),
-    );
+            );
+          },
+        ),
+      );
+    });
   }
 
-  void _navigateToSettingScreen(BuildContext context, int index) {
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.width > 600;
-
+  void _navigateToSettingScreen(BuildContext context, int index) async {
     switch (index) {
-      case 0: // Account
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const ProfileScreen()),
-        );
+      case 0:
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
         break;
-      case 1: // Privacy
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+      case 1:
+        await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (_) => const LanguageSheet(),
         );
+        // ensure subtitle refresh
+        setState(() {});
         break;
-      case 2: // Help & Support
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) =>   HelpAndSupportScreen()),
-        );
+      case 2:
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()));
         break;
-      case 3: // Feedback
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const FeedbackScreen()),
-        );
+      case 3:
+        Navigator.push(context, MaterialPageRoute(builder: (_) => HelpAndSupportScreen()));
         break;
-      case 4: // Terms & Conditions
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const TermsAndConditionsScreen()),
-        );
+      case 4:
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const FeedbackScreen()));
         break;
-      case 5: // Logout
+      case 5:
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsAndConditionsScreen()));
+        break;
+      case 6:
         showCustomCupertinoDialog(
           context: context,
-          title: 'Logout Confirmation',
-          content: 'Are you sure you want to logout?',
-          cancelText: 'Cancel',
-          confirmText: 'Logout',
-          onConfirm: () async {
-            await removeAccessToken();
-          },
+          title: 'logout_confirm_title'.tr,
+          content: 'logout_confirm_body'.tr,
+          cancelText: 'cancel'.tr,
+          confirmText: 'ok'.tr,
+          onConfirm: () async { await removeAccessToken(); },
         );
         break;
     }
@@ -160,20 +170,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await googleLoginController.signOut();
       await StorageService.removeData("Access_Token");
       await StorageService.removeData("User_id");
-      UtilKlass.showToastMsg(
-          "User Logout Successfully", context);
+      UtilKlass.showToastMsg("User Logout Successfully", context);
       Get.offAll(() => LoginScreen());
     } catch (e) {
       debugPrint("Failed to remove access token: $e");
-      UtilKlass.showToastMsg(
-          "Failed To Logout", context);
+      UtilKlass.showToastMsg("Failed To Logout", context);
     }
+  }
+
+   String _localeLabelFromI18n(Locale l) {
+    final code = '${l.languageCode}_${l.countryCode ?? ''}';
+    const keyMap = {
+      'en_US': 'English',
+      'hi_IN': 'Hindi',
+      'ur_IN': 'Urdu',
+      'te_IN': 'Telugu',
+      'mr_IN': 'Marathi',
+      'gu_IN': 'Gujarati',
+      'ta_IN': 'Tamil',
+    };
+    final k = keyMap[code];
+    return (k != null) ? k.tr : code;
   }
 }
 
 class _SettingItem {
-  final String title;
+  final String titleKey;
   final IconData icon;
   final bool isDestructive;
-  _SettingItem(this.title, this.icon, {this.isDestructive = false});
+  const _SettingItem(this.titleKey, this.icon, {this.isDestructive = false});
 }

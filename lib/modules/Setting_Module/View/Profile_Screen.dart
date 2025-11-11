@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:auratech_academy/utils/storageservice.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../app/controllers/localization_controller.dart';
 import '../../../constant/constant_colors.dart';
 import '../Controller/Order_History_Controller.dart';
 import '../Model/Order_History_Model.dart';
@@ -60,188 +61,194 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.width > 600;
+    final loc = Get.find<LocalizationController>(); // ← controller
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        title: Text(
-          'My Profile',
-          style: GoogleFonts.roboto(
-            fontSize: isTablet ? 24 : 20,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+    return Obx((){
+
+      final size = MediaQuery.of(context).size;
+      final isTablet = size.width > 600;
+      final _ = loc.locale;
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          iconTheme: IconThemeData(color: Colors.white),
+          backgroundColor: AppColors.primary,
+          elevation: 0,
+          title: Text(
+            'profile_title'.tr,
+            style: GoogleFonts.roboto(
+              fontSize: isTablet ? 24 : 20,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: AppColors.background,
+              size: isTablet ? 28 : 24,
+            ),
+            onPressed: () => Navigator.pop(context),
           ),
         ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.background,
-            size: isTablet ? 28 : 24,
+        body: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal: isTablet ? 32 : 20,
+            vertical: isTablet ? 40 : 30,
           ),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          horizontal: isTablet ? 32 : 20,
-          vertical: isTablet ? 40 : 30,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Profile Avatar
-            Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                CircleAvatar(
-                  radius: isTablet ? 60 : 50,
-                  backgroundImage: NetworkImage(
-                    userPhoto ?? "https://i.pravatar.cc/300",
-                  ),
-                  backgroundColor: Colors.grey.shade200,
-                  onBackgroundImageError: (_, __) => const AssetImage(
-                      'assets/images/placeholder.png'),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 4,
-                  child: Container(
-                    padding: EdgeInsets.all(isTablet ? 8 : 6),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.primary,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Profile Avatar
+              Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    radius: isTablet ? 60 : 50,
+                    backgroundImage: NetworkImage(
+                      userPhoto ?? "https://i.pravatar.cc/300",
                     ),
-                    child: Icon(
-                      Icons.edit,
-                      size: isTablet ? 20 : 18,
-                      color: Colors.white,
+                    backgroundColor: Colors.grey.shade200,
+                    onBackgroundImageError: (_, __) => const AssetImage(
+                        'assets/images/placeholder.png'),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 4,
+                    child: Container(
+                      padding: EdgeInsets.all(isTablet ? 8 : 6),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.primary,
+                      ),
+                      child: Icon(
+                        Icons.edit,
+                        size: isTablet ? 20 : 18,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: isTablet ? 40 : 30),
+                ],
+              ),
+              SizedBox(height: isTablet ? 40 : 30),
 
-            // Profile Fields
-            _buildField(
-              label: "Full Name",
-              value: userName ?? userId.toString(),
-              isTablet: isTablet,
-            ),
-            SizedBox(height: isTablet ? 20 : 16),
-            _buildField(
-              label: "Mobile Number",
-              value: userNumber ?? "0000000000",
-              isTablet: isTablet,
-            ),
-            SizedBox(height: isTablet ? 20 : 16),
-            _buildField(
-              label: "Email",
-              value: userEmail ?? "N/A",
-              isTablet: isTablet,
-            ),
-            SizedBox(height: isTablet ? 40 : 32),
+              // Profile Fields
+              _buildField(
+                label: "name".tr,
+                value: userName ?? userId.toString(),
+                isTablet: isTablet,
+              ),
+              SizedBox(height: isTablet ? 20 : 16),
+              _buildField(
+                label: "phone".tr,
+                value: userNumber ?? "0000000000",
+                isTablet: isTablet,
+              ),
+              SizedBox(height: isTablet ? 20 : 16),
+              _buildField(
+                label: "email".tr,
+                value: userEmail ?? "N/A",
+                isTablet: isTablet,
+              ),
+              SizedBox(height: isTablet ? 40 : 32),
 
-            // Order History Section
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Order History",
-                style: TextStyle(
-                  fontSize: isTablet ? 20 : 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+              // Order History Section
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "order_history".tr,
+                  style: TextStyle(
+                    fontSize: isTablet ? 20 : 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: isTablet ? 20 : 16),
+              SizedBox(height: isTablet ? 20 : 16),
 
-            Obx(() {
-              if (orderHistoryController.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (orderHistoryController.errorMessage.isNotEmpty) {
-                return Text(
-                  orderHistoryController.errorMessage.value,
-                  style: TextStyle(
-                    fontSize: isTablet ? 16 : 14,
-                    color: AppColors.textSecondary,
+              Obx(() {
+                if (orderHistoryController.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (orderHistoryController.errorMessage.isNotEmpty) {
+                  return Text(
+                    orderHistoryController.errorMessage.value,
+                    style: TextStyle(
+                      fontSize: isTablet ? 16 : 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  );
+                } else if (orderHistoryController.orderHistoryList.isEmpty) {
+                  return Text(
+                    "No order history found.",
+                    style: TextStyle(
+                      fontSize: isTablet ? 16 : 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () => orderHistoryController.fetchOrderHistory(
+                    userId: int.parse(StorageService.getData("User_id") ?? "0"),
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: orderHistoryController.orderHistoryList.length,
+                    itemBuilder: (context, index) {
+                      final order = orderHistoryController.orderHistoryList[index];
+                      return GestureDetector(
+                        onTap: () => _showOrderDetailsDialog(context, order, isTablet),
+                        child: _buildOrderCard(order, isTablet),
+                      );
+                    },
                   ),
                 );
-              } else if (orderHistoryController.orderHistoryList.isEmpty) {
-                return Text(
-                  "No order history found.",
-                  style: TextStyle(
-                    fontSize: isTablet ? 16 : 14,
-                    color: AppColors.textSecondary,
+              }),
+
+              SizedBox(height: isTablet ? 40 : 32),
+              Obx(() {
+                return Container(
+                  alignment: Alignment.center,
+                  height: isTablet ? 70 : 60,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(isTablet ? 10 : 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'total_amount'.tr,
+                          style: GoogleFonts.lato(
+                            color: Colors.white,
+                            fontSize: isTablet ? 18 : 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          "₹${totalOrderAmount.toStringAsFixed(2)}",
+                          style:  GoogleFonts.lato(
+                            color: Colors.white,
+                            fontSize: isTablet ? 18 : 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
-              }
-
-              return RefreshIndicator(
-                onRefresh: () => orderHistoryController.fetchOrderHistory(
-                  userId: int.parse(StorageService.getData("User_id") ?? "0"),
-                ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: orderHistoryController.orderHistoryList.length,
-                  itemBuilder: (context, index) {
-                    final order = orderHistoryController.orderHistoryList[index];
-                    return GestureDetector(
-                      onTap: () => _showOrderDetailsDialog(context, order, isTablet),
-                      child: _buildOrderCard(order, isTablet),
-                    );
-                  },
-                ),
-              );
-            }),
-
-            SizedBox(height: isTablet ? 40 : 32),
-            Obx(() {
-              return Container(
-                alignment: Alignment.center,
-                height: isTablet ? 70 : 60,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(isTablet ? 10 : 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Total Amount",
-                        style: GoogleFonts.lato(
-                          color: Colors.white,
-                          fontSize: isTablet ? 18 : 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        "₹${totalOrderAmount.toStringAsFixed(2)}",
-                        style:  GoogleFonts.lato(
-                          color: Colors.white,
-                          fontSize: isTablet ? 18 : 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ],
+              }),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
+
   }
 
   Widget _buildField({
@@ -310,20 +317,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildOrderRow("Order ID:", "${order.id}", isTablet),
-          _buildOrderRow("Order Name:", "${order.courseName}", isTablet),
+          _buildOrderRow('order_id'.tr, "${order.id}", isTablet),
+          _buildOrderRow('order_name'.tr, "${order.courseName}", isTablet),
           _buildOrderRow(
-            "Date:",
+            'order_date'.tr,
             order.orderId!.createDate.toString().split("T").first ?? "",
             isTablet,
           ),
           _buildOrderRow(
-            "Billing Name:",
+            'billing_name'.tr,
             order.orderId!.user?.firstName.toString() ?? "",
             isTablet,
           ),
-          _buildOrderRow("Total Qty:", order.quantity.toString(), isTablet),
-          _buildOrderRow("Total Amount:", "₹${order.totalPrice ?? "0"}", isTablet),
+          _buildOrderRow('total_qty'.tr, order.quantity.toString(), isTablet),
+          _buildOrderRow('total_amount'.tr, "₹${order.totalPrice ?? "0"}", isTablet),
         ],
       ),
     );

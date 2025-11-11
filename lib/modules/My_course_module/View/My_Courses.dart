@@ -37,7 +37,7 @@ class _MyCoursesState extends State<MyCourses> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "My Courses",
+          "my_courses_cart".tr,
           style: TextStyle(
             fontSize: isTablet ? 24 : 20,
             fontWeight: FontWeight.bold,
@@ -69,7 +69,7 @@ class _MyCoursesState extends State<MyCourses> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Continue Shopping",
+                        "continue_shopping".tr,
                         style: TextStyle(color: AppColors.primary),
                       ),
                       SizedBox(width: 2,),
@@ -277,7 +277,7 @@ class _MyCoursesState extends State<MyCourses> {
                 ),
               );
             } else {
-              UtilKlass.showToastMsg("Your Cart is Empty", context);
+              UtilKlass.showToastMsg("your_cart_is_empty".tr, context);
             }
           },
           style: ElevatedButton.styleFrom(
@@ -291,7 +291,7 @@ class _MyCoursesState extends State<MyCourses> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "Proceed to Checkout",
+                "proceed_to_checkout".tr,
                 style: TextStyle(
                   fontSize: isTablet ? 18 : 16,
                   color: Colors.white,

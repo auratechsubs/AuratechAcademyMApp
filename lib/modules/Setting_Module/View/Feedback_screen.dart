@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../constant/constant_colors.dart';
 
@@ -63,7 +64,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         title: Text(
-          "Feedback",
+          "settings_feedback".tr,
           style: GoogleFonts.roboto(
             fontSize: isTablet ? 22 : 20,
             fontWeight: FontWeight.bold,
@@ -88,7 +89,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Rate your experience",
+                'rate_experience'.tr,
                 style: GoogleFonts.roboto(
                   fontSize: isTablet ? 20 : 18,
                   fontWeight: FontWeight.bold,
@@ -115,7 +116,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               ),
               SizedBox(height: isTablet ? 24 : 20),
               Text(
-                "Your Feedback",
+                'your_feedback'.tr,
                 style: GoogleFonts.roboto(
                   fontSize: isTablet ? 20 : 18,
                   fontWeight: FontWeight.bold,
@@ -131,7 +132,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   color: AppColors.textPrimary,
                 ),
                 decoration: InputDecoration(
-                  hintText: "Write your feedback here...",
+                  hintText: 'feedback_hint'.tr,
                   hintStyle: GoogleFonts.roboto(
                     color: Colors.grey[400],
                     fontSize: isTablet ? 16 : 14,
@@ -173,7 +174,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Submit",
+                        "submit_quiz".tr,
                         style: GoogleFonts.roboto(
                           fontSize: isTablet ? 18 : 16,
                           color: Colors.white,

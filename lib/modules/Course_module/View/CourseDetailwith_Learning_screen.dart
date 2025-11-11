@@ -264,8 +264,6 @@ class _TopMetaCard extends StatelessWidget {
             const SizedBox(height: 8),
             Wrap(spacing: 8, runSpacing: -6, children: chips),
             const SizedBox(height: 12),
-
-            // Description may come as HTML — render as plain paragraphs
             ..._HtmlText.blocks(course.description).map(
               (p) => Padding(
                 padding: const EdgeInsets.only(bottom: 6),
@@ -278,19 +276,18 @@ class _TopMetaCard extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
             Row(
               children: [
                 if (course.courseCategory?.categoryName.isNotEmpty == true)
                   Text(
                     course.courseCategory!.categoryName,
-                    style: theme.textTheme.labelLarge?.copyWith(
+                    style: theme.textTheme.labelMedium?.copyWith(
                       color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                const Spacer(),
+                Spacer(),
                 _PricePill(amount: course.courseFee),
               ],
             ),
@@ -326,7 +323,7 @@ class _PricePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.primary.withOpacity(.08),
         borderRadius: BorderRadius.circular(999),
@@ -337,7 +334,7 @@ class _PricePill extends StatelessWidget {
         style: const TextStyle(
           color: AppColors.primary,
           fontWeight: FontWeight.w800,
-          fontSize: 16,
+          fontSize: 14,
         ),
       ),
     );

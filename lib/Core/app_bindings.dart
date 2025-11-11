@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../app/controllers/localization_controller.dart';
 import '../modules/Authentication_module/Controller/Login_Controller.dart';
 import '../modules/Authentication_module/Controller/Google_Signup_Controller.dart';
 import '../modules/Authentication_module/Controller/Simple_Signup_Controller.dart';
@@ -28,11 +29,13 @@ class AppBindings extends Bindings {
   @override
   void dependencies() {
     // Auth
+    // Get.lazyPut<LocalizationController>(() => LocalizationController(), fenix: true);
     Get.lazyPut<LoginController>(() => LoginController(), fenix: true);
     Get.lazyPut<GoogleSigninController>(() => GoogleSigninController(),
         fenix: true);
     Get.lazyPut<SimpleLoginController>(() => SimpleLoginController(),
         fenix: true);
+
 
     // Home/Intro
     Get.lazyPut<Homescreen_Controller>(() => Homescreen_Controller(),
@@ -68,5 +71,7 @@ class AppBindings extends Bindings {
 
     // Settings/FAQ
     Get.lazyPut<FaqController>(() => FaqController(), fenix: true);
+   // Get.lazyPut(LocalizationController(), permanent: true);
+
   }
 }

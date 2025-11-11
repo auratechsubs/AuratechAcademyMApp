@@ -19,7 +19,7 @@ class BlogScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Blogs",
+          "blog_title".tr,
           style: TextStyle(
             fontSize: isTablet ? 20 : 18,
             fontWeight: FontWeight.bold,
@@ -127,7 +127,7 @@ class BlogScreen extends StatelessWidget {
                                           ),
                                           if (!isExpanded && isLong)
                                             TextSpan(
-                                              text: 'Read More',
+                                              text: 'read_more'.tr,
                                               style: TextStyle(
                                                 color: Theme.of(context).colorScheme.primary,
                                                 fontSize: isTablet ? 20 : 18,
@@ -157,7 +157,7 @@ class BlogScreen extends StatelessWidget {
                                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                         ),
                                         child: Text(
-                                          "Read Less",
+                                          'read_leas'.tr,
                                           style: TextStyle(
                                             color: Theme.of(context).colorScheme.primary,
                                             fontSize: isTablet ? 20 : 18,
