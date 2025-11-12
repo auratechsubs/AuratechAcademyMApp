@@ -1,6 +1,7 @@
 import 'package:auratech_academy/modules/Category_module/Controller/Category_controller.dart';
 import 'package:auratech_academy/modules/Mentor_module/Controller/Mentor_Controller.dart';
 import 'package:auratech_academy/utils/storageservice.dart';
+import 'package:auratech_academy/utils/util_klass.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:auratech_academy/modules/Course_module/View/Popular_Courses.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -105,7 +106,11 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               // Header Section
               Padding(
-                padding: EdgeInsets.all(isTablet ? 24 : 16),
+                padding: EdgeInsets.only(
+                  top: isTablet ? 24 : 16,
+                  left: isTablet ? 24 : 16,
+                  right: isTablet ? 24 : 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -163,6 +168,92 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       style: TextStyle(fontSize: isTablet ? 16 : 14),
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: EdgeInsets.only(
+                    left: isTablet ? 24 : 14,
+                    bottom: isTablet ? 24 : 16,
+                    right: isTablet ? 24 : 14,
+                    top: isTablet ? 0 : 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: isTablet ? 24 : 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "categories".tr,
+                          style: TextStyle(
+                            fontSize: isTablet ? 20 : 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => CategoryScreen()),
+                          ),
+                          child: Text(
+                            "see_all".tr,
+                            style: TextStyle(
+                              fontSize: isTablet ? 16 : 14,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: isTablet ? 16 : 12),
+                    SizedBox(
+                      height: isTablet ? 48 : 40,
+                      child: Obx(() => ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: category_controller.categoryList.length,
+                            itemBuilder: (context, index) {
+                              final cat =
+                                  category_controller.categoryList[index];
+                              return Obx(() => Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6),
+                                    child: ChoiceChip(
+                                      checkmarkColor: AppColors.background,
+                                      side:
+                                          BorderSide(color: AppColors.primary),
+                                      chipAnimationStyle: ChipAnimationStyle(
+                                        enableAnimation: AnimationStyle(
+                                            curve: Curves.easeInOut),
+                                      ),
+                                      label: Text(
+                                        cat.categoryName ?? "Unknown",
+                                        style: TextStyle(
+                                          fontSize: isTablet ? 16 : 14,
+                                          color: popularCourse_controller
+                                                      .selectedCategory.value ==
+                                                  cat.categoryName
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                      selected: popularCourse_controller
+                                              .selectedCategory.value ==
+                                          cat.categoryName,
+                                      onSelected: (_) {
+                                        popularCourse_controller
+                                            .HomefilterCorse(
+                                                cat.categoryName ?? "");
+                                      },
+                                      selectedColor: AppColors.primary,
+                                      backgroundColor: Colors.blueGrey.shade50,
+                                    ),
+                                  ));
+                            },
+                          )),
                     ),
                   ],
                 ),
@@ -363,87 +454,87 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               // Categories Section
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: isTablet ? 24 : 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "categories".tr,
-                          style: TextStyle(
-                            fontSize: isTablet ? 20 : 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => CategoryScreen()),
-                          ),
-                          child: Text(
-                            "see_all".tr,
-                            style: TextStyle(
-                              fontSize: isTablet ? 16 : 14,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: isTablet ? 16 : 12),
-                    SizedBox(
-                      height: isTablet ? 48 : 40,
-                      child: Obx(() => ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: category_controller.categoryList.length,
-                            itemBuilder: (context, index) {
-                              final cat =
-                                  category_controller.categoryList[index];
-                              return Obx(() => Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 6),
-                                    child: ChoiceChip(
-                                      checkmarkColor: AppColors.background,
-                                      side:
-                                          BorderSide(color: AppColors.primary),
-                                      chipAnimationStyle: ChipAnimationStyle(
-                                        enableAnimation: AnimationStyle(
-                                            curve: Curves.easeInOut),
-                                      ),
-                                      label: Text(
-                                        cat.categoryName ?? "Unknown",
-                                        style: TextStyle(
-                                          fontSize: isTablet ? 16 : 14,
-                                          color: popularCourse_controller
-                                                      .selectedCategory.value ==
-                                                  cat.categoryName
-                                              ? Colors.white
-                                              : Colors.black,
-                                        ),
-                                      ),
-                                      selected: popularCourse_controller
-                                              .selectedCategory.value ==
-                                          cat.categoryName,
-                                      onSelected: (_) {
-                                        popularCourse_controller
-                                            .HomefilterCorse(
-                                                cat.categoryName ?? "");
-                                      },
-                                      selectedColor: AppColors.primary,
-                                      backgroundColor: Colors.blueGrey.shade50,
-                                    ),
-                                  ));
-                            },
-                          )),
-                    ),
-                  ],
-                ),
-              ),
+              // Padding(
+              //   padding: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16),
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       SizedBox(height: isTablet ? 24 : 16),
+              //       Row(
+              //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //         children: [
+              //           Text(
+              //             "categories".tr,
+              //             style: TextStyle(
+              //               fontSize: isTablet ? 20 : 18,
+              //               fontWeight: FontWeight.bold,
+              //               color: AppColors.textPrimary,
+              //             ),
+              //           ),
+              //           InkWell(
+              //             onTap: () => Navigator.push(
+              //               context,
+              //               MaterialPageRoute(builder: (_) => CategoryScreen()),
+              //             ),
+              //             child: Text(
+              //               "see_all".tr,
+              //               style: TextStyle(
+              //                 fontSize: isTablet ? 16 : 14,
+              //                 color: AppColors.primary,
+              //               ),
+              //             ),
+              //           ),
+              //         ],
+              //       ),
+              //       SizedBox(height: isTablet ? 16 : 12),
+              //       SizedBox(
+              //         height: isTablet ? 48 : 40,
+              //         child: Obx(() => ListView.builder(
+              //               scrollDirection: Axis.horizontal,
+              //               itemCount: category_controller.categoryList.length,
+              //               itemBuilder: (context, index) {
+              //                 final cat =
+              //                     category_controller.categoryList[index];
+              //                 return Obx(() => Padding(
+              //                       padding: const EdgeInsets.symmetric(
+              //                           horizontal: 6),
+              //                       child: ChoiceChip(
+              //                         checkmarkColor: AppColors.background,
+              //                         side:
+              //                             BorderSide(color: AppColors.primary),
+              //                         chipAnimationStyle: ChipAnimationStyle(
+              //                           enableAnimation: AnimationStyle(
+              //                               curve: Curves.easeInOut),
+              //                         ),
+              //                         label: Text(
+              //                           cat.categoryName ?? "Unknown",
+              //                           style: TextStyle(
+              //                             fontSize: isTablet ? 16 : 14,
+              //                             color: popularCourse_controller
+              //                                         .selectedCategory.value ==
+              //                                     cat.categoryName
+              //                                 ? Colors.white
+              //                                 : Colors.black,
+              //                           ),
+              //                         ),
+              //                         selected: popularCourse_controller
+              //                                 .selectedCategory.value ==
+              //                             cat.categoryName,
+              //                         onSelected: (_) {
+              //                           popularCourse_controller
+              //                               .HomefilterCorse(
+              //                                   cat.categoryName ?? "");
+              //                         },
+              //                         selectedColor: AppColors.primary,
+              //                         backgroundColor: Colors.blueGrey.shade50,
+              //                       ),
+              //                     ));
+              //               },
+              //             )),
+              //       ),
+              //     ],
+              //   ),
+              // ),
 
               // Popular Courses (Vertical)
               Padding(
@@ -456,42 +547,42 @@ class _HomeScreenState extends State<HomeScreen> {
                     SizedBox(
                       height: 10,
                     ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          "popular_courses".tr,
-                          style: TextStyle(
-                            fontSize: isTablet ? 20 : 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                            overflow: TextOverflow.ellipsis,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "popular_courses".tr,
+                            style: TextStyle(
+                              fontSize: isTablet ? 20 : 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            maxLines: 1,
                           ),
-                          maxLines: 1,
                         ),
-                      ),
-                      InkWell(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PopularCoursesScreen(
-                              courses: popularCourse_controller.courseList,
+                        InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PopularCoursesScreen(
+                                courses: popularCourse_controller.courseList,
+                              ),
                             ),
                           ),
-                        ),
-                        child: Text(
-                          "see_all".tr,
-                          style: TextStyle(
-                            fontSize: isTablet ? 16 : 14,
-                            color: AppColors.primary,
-                            overflow: TextOverflow.ellipsis,
+                          child: Text(
+                            "see_all".tr,
+                            style: TextStyle(
+                              fontSize: isTablet ? 16 : 14,
+                              color: AppColors.primary,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            maxLines: 1,
                           ),
-                          maxLines: 1,
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                     SizedBox(height: isTablet ? 16 : 20),
                     _buildCourseTabs(isTablet),
                     SizedBox(height: isTablet ? 16 : 20),
@@ -566,42 +657,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                  Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        "recommended_courses".tr,
-                        style: TextStyle(
-                          fontSize: isTablet ? 20 : 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        maxLines: 1,
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PopularCoursesScreen(
-                            courses: popularCourse_controller.courseList,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "recommended_courses".tr,
+                            style: TextStyle(
+                              fontSize: isTablet ? 20 : 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            maxLines: 1,
                           ),
                         ),
-                      ),
-                      child: Text(
-                        "see_all".tr,
-                        style: TextStyle(
-                          fontSize: isTablet ? 16 : 14,
-                          color: AppColors.primary,
+                        InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PopularCoursesScreen(
+                                courses: popularCourse_controller.courseList,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            "see_all".tr,
+                            style: TextStyle(
+                              fontSize: isTablet ? 16 : 14,
+                              color: AppColors.primary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      ],
                     ),
-                  ],
-                ),
                     SizedBox(height: isTablet ? 16 : 12),
                     Obx(() {
                       if (popularCourse_controller.isLoading.value) {
@@ -677,8 +768,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     // 🔹 Header Row
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child:
-                      Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
@@ -769,46 +859,46 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(
                     horizontal: isTablet ? 24 : 16,
-                    vertical: isTablet ? 32 : 24),
+                    vertical: isTablet ? 32 : 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                  Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        "top_mentors".tr,
-                        style: TextStyle(
-                          fontSize: isTablet ? 20 : 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        maxLines: 1,
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TopMentorsScreen(
-                            mentors: mentor_controller.mentorList,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "top_mentors".tr,
+                            style: TextStyle(
+                              fontSize: isTablet ? 20 : 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            maxLines: 1,
                           ),
                         ),
-                      ),
-                      child: Text(
-                        "see_all".tr,
-                        style: TextStyle(
-                          fontSize: isTablet ? 16 : 14,
-                          color: AppColors.primary,
+                        InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TopMentorsScreen(
+                                mentors: mentor_controller.mentorList,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            "see_all".tr,
+                            style: TextStyle(
+                              fontSize: isTablet ? 16 : 14,
+                              color: AppColors.primary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      ],
                     ),
-                  ],
-                ),
                     SizedBox(height: isTablet ? 16 : 12),
                     Obx(() {
                       if (mentor_controller.isLoading.value) {
@@ -1318,76 +1408,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Domain> domains = [
     Domain(
-      title: 'ChatGPT and Generative AI',
-      icon: Icons.smart_toy_outlined,
-      backgroundColor: Color(0xFF6366F1), // Indigo
-    ),
-    Domain(
-      title: 'Artificial Intelligence',
-      icon: Icons.psychology_outlined,
-      backgroundColor: Color(0xFFEC4899), // Pink
-    ),
-    Domain(
-      title: 'Machine Learning',
-      icon: Icons.model_training_outlined,
-      backgroundColor: Color(0xFF8B5CF6), // Purple
-    ),
-    Domain(
-      title: 'Data Science',
-      icon: Icons.analytics_outlined,
-      backgroundColor: Color(0xFF06B6D4), // Cyan
-    ),
-    Domain(
-      title: 'Digital Marketing',
-      icon: Icons.trending_up_outlined,
-      backgroundColor: Color(0xFF10B981), // Emerald
-    ),
-    Domain(
-      title: 'Cyber Security',
-      icon: Icons.security_outlined,
-      backgroundColor: Color(0xFFEF4444), // Red
-    ),
-    Domain(
-      title: 'Cloud Computing',
-      icon: Icons.cloud_outlined,
-      backgroundColor: Color(0xFFF59E0B), // Amber
-    ),
-    Domain(
-      title: 'Management',
-      icon: Icons.business_center_outlined,
-      backgroundColor: Color(0xFF6366F1), // Indigo
-    ),
-    Domain(
-      title: 'Web Development',
-      icon: Icons.code_outlined,
-      backgroundColor: Color(0xFF3B82F6), // Blue
-    ),
-    Domain(
-      title: 'Mobile Development',
-      icon: Icons.phone_iphone_outlined,
-      backgroundColor: Color(0xFF8B5CF6), // Purple
-    ),
-    Domain(
-      title: 'UI/UX Design',
-      icon: Icons.design_services_outlined,
-      backgroundColor: Color(0xFFEC4899), // Pink
-    ),
-    Domain(
-      title: 'Data Analytics',
-      icon: Icons.insights_outlined,
-      backgroundColor: Color(0xFF06B6D4), // Cyan
-    ),
-    Domain(
-      title: 'Blockchain',
-      icon: Icons.account_balance_wallet_outlined,
-      backgroundColor: Color(0xFFF59E0B), // Amber
-    ),
-    Domain(
-      title: 'DevOps',
-      icon: Icons.settings_suggest_outlined,
-      backgroundColor: Color(0xFF10B981), // Emerald
-    ),
-    Domain(
       title: 'Networking',
       icon: Icons.lan_outlined,
       backgroundColor: Color(0xFF6366F1), // Indigo
@@ -1531,40 +1551,40 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-        Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              "what_make_different".tr,
-              style: TextStyle(
-                fontSize: isTablet ? 22 : 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-                overflow: TextOverflow.ellipsis,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  "what_make_different".tr,
+                  style: TextStyle(
+                    fontSize: isTablet ? 22 : 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  maxLines: 1,
+                ),
               ),
-              maxLines: 1,
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              "premium_features".tr,
-              style: TextStyle(
-                fontSize: isTablet ? 14 : 12,
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-                overflow: TextOverflow.ellipsis,
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  "premium_features".tr,
+                  style: TextStyle(
+                    fontSize: isTablet ? 14 : 12,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  maxLines: 1,
+                ),
               ),
-              maxLines: 1,
-            ),
+            ],
           ),
-        ],
-      ),
           SizedBox(height: isTablet ? 16 : 12),
           GridView.builder(
             shrinkWrap: true,
@@ -2015,47 +2035,48 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-        Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              "success_stories".tr,
-              style: TextStyle(
-                fontSize: isTablet ? 22 : 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-                overflow: TextOverflow.ellipsis,
-              ),
-              maxLines: 1,
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              // TODO: View all success stories
-            },
-            child: Row(
-              mainAxisSize: MainAxisSize.min, // 👈 important: shrink-wraps the right row
-              children: [
-                Text(
-                  "see_all".tr,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  "success_stories".tr,
                   style: TextStyle(
-                    fontSize: isTablet ? 16 : 14,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
+                    fontSize: isTablet ? 22 : 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                    overflow: TextOverflow.ellipsis,
                   ),
+                  maxLines: 1,
                 ),
-                SizedBox(width: 4),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: isTablet ? 16 : 14,
-                  color: AppColors.primary,
+              ),
+              InkWell(
+                onTap: () {
+                  // TODO: View all success stories
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize
+                      .min, // 👈 important: shrink-wraps the right row
+                  children: [
+                    Text(
+                      "see_all".tr,
+                      style: TextStyle(
+                        fontSize: isTablet ? 16 : 14,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: isTablet ? 16 : 14,
+                      color: AppColors.primary,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
           SizedBox(height: isTablet ? 16 : 12),
           SizedBox(
             height: isTablet ? 280 : 250,
@@ -2356,7 +2377,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontSize: isTablet ? 16 : 14,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
-
                     ),
                     maxLines: 1,
                   ),
@@ -2457,8 +2477,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(height: 22),
                     OutlinedButton(
-                      onPressed: () {
-                        // TODO: Schedule consultation
+                      onPressed: () async {
+                        await UtilKlass().openWhatsApp(
+                            phone: "919460548809",
+                            message:
+                                "Hello, I would like to request a free consultation.");
                       },
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(
@@ -2596,19 +2619,12 @@ class ModernSkillsSection extends StatelessWidget {
   const ModernSkillsSection({
     super.key,
     required this.items,
-    this.titleKicker = 'MASTER SKILLS. BUILD A CAREER.',
-    this.title = 'Modern skills for\nmodern careers',
-    this.subtitle =
-        'Stay at the top of your game with skills from the hottest domains. '
-            'Explore topics that interest you most and see how the programs are relevant to you.',
     this.maxContentWidth = 1200,
     this.gap = 24,
   });
 
   final List<SkillItem> items;
-  final String titleKicker;
-  final String title;
-  final String subtitle;
+
   final double maxContentWidth;
   final double gap;
 
@@ -2625,11 +2641,6 @@ class ModernSkillsSection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _LeftTextBlock(
-                      titleKicker: titleKicker,
-                      title: title,
-                      subtitle: subtitle),
-                  SizedBox(height: gap),
                   _RightPillsGrid(items: items),
                 ],
               ),
@@ -2637,14 +2648,6 @@ class ModernSkillsSection extends StatelessWidget {
           : Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  flex: 5,
-                  child: _LeftTextBlock(
-                      titleKicker: titleKicker,
-                      title: title,
-                      subtitle: subtitle),
-                ),
-                SizedBox(width: gap),
                 Expanded(flex: 7, child: _RightPillsGrid(items: items)),
               ],
             ),

@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../utils/storageservice.dart';
-import '../../../widget/CongratulationWidget.dart';
+import '../../../widget/custombottombar.dart';
 import '../../Setting_Module/Controller/Order_History_Controller.dart';
 
 class GoogleSigninController extends GetxController {
@@ -63,13 +63,15 @@ class GoogleSigninController extends GetxController {
 
         Get.snackbar("Login Successful", "Welcome:-- ${userName.value}");
         print("✅ Logged in as ${userEmail.value}");
+        //UtilKlass.showToastMsgWithoutContext("You are Login Successful");
 
-        Get.offAll(() => CongratulationsScreen(
-              imagePath: 'assets/images/congratulationpic.png',
-              title: 'Congratulations',
-              subtitle: 'Your account is ready to use.\nRedirecting to home...',
-              delaySeconds: 3,
-            ));
+        Get.offAll(() => BottomnavBar());
+        // Get.offAll(() => CongratulationsScreen(
+        //       imagePath: 'assets/images/congratulationpic.png',
+        //       title: 'Congratulations',
+        //       subtitle: 'Your account is ready to use.\nRedirecting to home...',
+        //       delaySeconds: 3,
+        //     ));
         return user;
       } else {
         Get.snackbar("Error", "Firebase user is null.");

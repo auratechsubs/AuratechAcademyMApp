@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:auratech_academy/ApiServices/ApiServices.dart';
 import '../../../utils/storageservice.dart';
-import '../../../widget/CongratulationWidget.dart';
+import '../../../widget/custombottombar.dart';
 import '../../Setting_Module/Controller/Order_History_Controller.dart';
 import '../Model/Login_Model.dart';
 
@@ -57,18 +57,26 @@ class LoginController extends GetxController {
 
       print("User Logged In => ${response.accessToken}");
 
-      Get.offAll(() => CongratulationsScreen(
-            imagePath: 'assets/images/congratulationpic.png',
-            title: 'Congratulations',
-            subtitle: 'Your account is ready to use.\nRedirecting to home...',
-            delaySeconds: 3,
-          ));
-
-
+      // Get.offAll(() => CongratulationsScreen(
+      //       imagePath: 'assets/images/congratulationpic.png',
+      //       title: 'Congratulations',
+      //       subtitle: 'Your account is ready to use.\nRedirecting to home...',
+      //       delaySeconds: 3,
+      //     ));
+      Get.showSnackbar(GetSnackBar(
+        backgroundColor: Colors.green,
+        title: "Login",
+        message: "You are login successfully",
+        isDismissible: true,
+        duration: Duration(seconds: 1),
+      ));
+      Get.offAll(() => BottomnavBar());
     } catch (e) {
-      LogX.printError("Login Failed ${e.toString()}");
-      Get.snackbar("Login Failed", e.toString(),
-          snackPosition: SnackPosition.BOTTOM);
+      final error = e.toString();
+      String msg = error.contains('-') ? error.split('-').last.trim() : error;
+
+      LogX.printError("Login Failed $msg");
+      Get.snackbar("Login Failed", msg, snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
     }

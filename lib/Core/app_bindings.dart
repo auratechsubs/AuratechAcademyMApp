@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 
-import '../app/controllers/localization_controller.dart';
 import '../modules/Authentication_module/Controller/Login_Controller.dart';
 import '../modules/Authentication_module/Controller/Google_Signup_Controller.dart';
 import '../modules/Authentication_module/Controller/Simple_Signup_Controller.dart';

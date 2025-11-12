@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UtilKlass {
   static void navigateScreen(Widget widget) {
@@ -64,6 +65,7 @@ class UtilKlass {
       duration: const Duration(seconds: 2),
     );
   }
+
   static void showToastMsgWithoutContext(String message) {
     showToast(
       message,
@@ -73,12 +75,11 @@ class UtilKlass {
       reverseAnimation: StyledToastAnimation.fade,
       position: StyledToastPosition.bottom,
       duration: const Duration(seconds: 2),
-     );
+    );
   }
+
   static void showBarMsg(String dynamic) {
     Get.snackbar("", dynamic);
-
-
   }
 
   static String getString(TextEditingController controller) {
@@ -111,7 +112,20 @@ class UtilKlass {
   }
 
   static hideProgressDialog(BuildContext context) {
-
     Navigator.of(context, rootNavigator: true).pop();
   }
+
+  Future<void> openWhatsApp({String? phone, String? message}) async {
+    final uri = phone != null
+        ? Uri.parse(
+            "https://wa.me/$phone?text=${Uri.encodeComponent(message ?? '')}")
+        : Uri.parse("whatsapp://send");
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not open WhatsApp';
+    }
+  }
+
 }
