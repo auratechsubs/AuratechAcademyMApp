@@ -40,6 +40,7 @@ class ApiService {
   // Generic GET: Single object
   Future<List<T>> getListFromObject<T>(
       String endpoint,
+
       T Function(Map<String, dynamic>) fromJson, {
         Map<String, String>? headers,
       }) async {

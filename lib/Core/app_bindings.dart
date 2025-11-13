@@ -4,9 +4,13 @@ import '../modules/Authentication_module/Controller/Login_Controller.dart';
 import '../modules/Authentication_module/Controller/Google_Signup_Controller.dart';
 import '../modules/Authentication_module/Controller/Simple_Signup_Controller.dart';
 
+import '../modules/Homescreen_module/Controller/Coursesegment_Controller.dart';
+import '../modules/Homescreen_module/Controller/Flash_deal_controller.dart';
 import '../modules/Homescreen_module/Controller/HomeScreen_Controller.dart';
+import '../modules/Homescreen_module/Controller/SuccessStoryController.dart';
 import '../modules/Homescreen_module/Controller/Testimonial_controller.dart';
 import '../modules/Homescreen_module/Controller/GalleyMaterController.dart';
+import '../modules/Homescreen_module/Controller/Webminar_Controller.dart';
 import '../modules/Introduction_module/Controller/Blog_Controller.dart';
 
 import '../modules/Category_module/Controller/Category_controller.dart';
@@ -44,6 +48,10 @@ class AppBindings extends Bindings {
     Get.lazyPut<GalleryMasterController>(() => GalleryMasterController(),
         fenix: true);
     Get.lazyPut<BlogController>(() => BlogController(), fenix: true);
+    Get.lazyPut<CourseSegmentController>(() => CourseSegmentController(), fenix: true);
+    Get.lazyPut<FlashBannerController>(() => FlashBannerController(), fenix: true);
+    Get.lazyPut<SuccessStoryController>(() => SuccessStoryController(), fenix: true);
+    Get.lazyPut<WebinarController>(() => WebinarController(), fenix: true);
 
     // Category & Courses
     Get.lazyPut<Category_Controller>(() => Category_Controller(), fenix: true);

@@ -1,4 +1,6 @@
 import 'package:auratech_academy/modules/Category_module/Controller/Category_controller.dart';
+import 'package:auratech_academy/modules/Homescreen_module/Model/Coursesegment_Model.dart'
+    as csmodel;
 import 'package:auratech_academy/modules/Mentor_module/Controller/Mentor_Controller.dart';
 import 'package:auratech_academy/utils/storageservice.dart';
 import 'package:auratech_academy/utils/util_klass.dart';
@@ -7,6 +9,7 @@ import 'package:auratech_academy/modules/Course_module/View/Popular_Courses.dart
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import '../../../constant/constant_colors.dart';
 import '../../../widget/WebminarCard.dart';
 import '../../../widget/tagwidget.dart';
@@ -15,9 +18,14 @@ import '../../Course_module/Controller/Popular_course_controller.dart';
 import '../../Course_module/View/Single_course_detail_Screen.dart';
 import '../../Mentor_module/View/Single_mentor_Screen.dart';
 import '../../Mentor_module/View/Top_Mentor_Screen.dart';
+import '../Controller/Coursesegment_Controller.dart';
+import '../Controller/Flash_deal_controller.dart';
 import '../Controller/GalleyMaterController.dart';
 import '../Controller/HomeScreen_Controller.dart';
+import '../Controller/SuccessStoryController.dart';
 import '../Controller/Testimonial_controller.dart';
+import '../Controller/Webminar_Controller.dart';
+import '../Model/SuccessStoryModel.dart';
 import 'Search_Screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -34,6 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
   final PopularCourseController popularCourse_controller = Get.find();
   final Mentor_Controller mentor_controller = Get.find();
   final GalleryMasterController galleycontroller = Get.find();
+  final CourseSegmentController courseSegmentController = Get.find();
+  final FlashBannerController flashdealcontroller = Get.find();
+  final SuccessStoryController successStoryController = Get.find();
+  final WebinarController webinarController = Get.find();
   final String baseUrl = "https://api.auratechacademy.com/";
   final List<String> slideImages = [
     "assets/images/50%off.jpg",
@@ -44,8 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   final CarouselSliderController _carouselController =
       CarouselSliderController();
-
-  ///for modern skill set section
 
   final skills = <SkillItem>[
     SkillItem(icon: Icons.science, label: 'AI & Machine Learning'),
@@ -87,6 +97,40 @@ class _HomeScreenState extends State<HomeScreen> {
       'subtitle': 'Always available for help'
     },
   ];
+
+  final List<IconData> itSectorIcons = [
+    Icons.computer,
+    Icons.code,
+    Icons.biotech_rounded,
+    Icons.security,
+  ];
+
+  DateTime? _parseDateTime(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      return DateTime.parse(raw).toLocal(); // backend se Z aarha hai -> local
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _formatDate(DateTime? dt) {
+    if (dt == null) return "";
+    return DateFormat("dd MMM yyyy").format(dt); // e.g. 22 Aug 2025
+  }
+
+  String _formatTime(DateTime? dt) {
+    if (dt == null) return "";
+    return DateFormat("hh:mm a").format(dt) + " IST"; // 06:00 PM IST
+  }
+
+  String _buildImageUrl(String? path) {
+    if (path == null || path.isEmpty) {
+      return "assets/images/auratech1.jpg"; // fallback local asset
+    }
+    if (path.startsWith("http")) return path;
+    return "https://api.auratechacademy.com$path";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -259,284 +303,239 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // Carousel Section
               Column(
                 children: [
-                  CarouselSlider.builder(
-                    carouselController: _carouselController,
-                    itemCount: slideImages.length,
-                    itemBuilder: (context, index, realIndex) {
-                      return ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(screenWidth * 0.025),
-                        child: Container(
-                          width: screenWidth,
-                          height: screenHeight * 0.27,
-                          margin: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.02),
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(screenWidth * 0.03),
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFF03C2), Color(0xFF0189FF)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            image: DecorationImage(
-                              image: AssetImage(slideImages[index]),
-                              fit: BoxFit.cover,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.15),
-                                blurRadius: screenWidth * 0.025,
-                                spreadRadius: 1,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Stack(
-                            children: [
-                              Container(
+                  Obx(() {
+                    if (flashdealcontroller.isLoading.value) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (flashdealcontroller.banners.isEmpty) {
+                      return const Center(
+                        child: Text("No flash deals available"),
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        CarouselSlider.builder(
+                          carouselController: _carouselController,
+                          itemCount: flashdealcontroller.banners.length,
+                          itemBuilder: (context, index, realIndex) {
+                            final banner = flashdealcontroller.banners[index];
+
+                            // Backend image (convert relative → full URL)
+                            final String imgUrl =
+                                "https://api.auratechacademy.com${banner.img ?? ''}";
+
+                            return ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(screenWidth * 0.025),
+                              child: Container(
+                                width: screenWidth,
+                                height: screenHeight * 0.27,
+                                margin: EdgeInsets.symmetric(
+                                    horizontal: screenWidth * 0.02),
                                 decoration: BoxDecoration(
                                   borderRadius:
                                       BorderRadius.circular(screenWidth * 0.03),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
+                                  gradient: const LinearGradient(
                                     colors: [
-                                      Colors.black.withOpacity(0.25),
-                                      Colors.black.withOpacity(0.65),
+                                      Color(0xFFFF03C2),
+                                      Color(0xFF0189FF)
                                     ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
-                                ),
-                              ),
-                              Positioned(
-                                top: screenHeight * 0.02,
-                                left: screenWidth * 0.025,
-                                child: Row(
-                                  children: [
-                                    TagWidget(
-                                      label: "50% OFF",
-                                      bgColor: Colors.redAccent,
-                                      fontSize: screenWidth * 0.03,
+                                  image: DecorationImage(
+                                    image: NetworkImage(imgUrl),
+                                    fit: BoxFit.cover,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.15),
+                                      blurRadius: screenWidth * 0.025,
+                                      spreadRadius: 1,
+                                      offset: const Offset(0, 5),
                                     ),
-                                    SizedBox(width: screenWidth * 0.02),
-                                    TagWidget(
-                                      label: 'Live at 08:00 PM',
-                                      bgColor: AppColors.primary,
-                                      fontSize: screenWidth * 0.03,
+                                  ],
+                                ),
+                                child: Stack(
+                                  children: [
+                                    // Dark overlay
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(
+                                            screenWidth * 0.03),
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.black.withOpacity(0.25),
+                                            Colors.black.withOpacity(0.65),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+
+                                    // KEY 1 & KEY 2 TAGS
+                                    Positioned(
+                                      top: screenHeight * 0.02,
+                                      left: screenWidth * 0.025,
+                                      child: Row(
+                                        children: [
+                                          TagWidget(
+                                            label: banner.key1 ?? "",
+                                            bgColor: Colors.redAccent,
+                                            fontSize: screenWidth * 0.03,
+                                          ),
+                                          SizedBox(width: screenWidth * 0.02),
+                                          TagWidget(
+                                            label: banner.key2 ?? "",
+                                            bgColor: AppColors.primary,
+                                            fontSize: screenWidth * 0.03,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // KEY 3 (Lifetime Access or API key_3)
+                                    Positioned(
+                                      top: screenHeight * 0.02,
+                                      right: screenWidth * 0.025,
+                                      child: TagWidget(
+                                        label: banner.key3 ?? "",
+                                        bgColor: Colors.green,
+                                        fontSize: screenWidth * 0.03,
+                                      ),
+                                    ),
+
+                                    // COURSE / BANNER NAME
+                                    Positioned(
+                                      bottom: screenHeight * 0.07,
+                                      left: screenWidth * 0.025,
+                                      right: screenWidth * 0.25,
+                                      child: Text(
+                                        banner.name ?? "",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: isTablet ? 16 : 14,
+                                          fontWeight: FontWeight.w600,
+                                          height: 1.2,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+
+                                    // CTA BUTTON
+                                    Positioned(
+                                      bottom: screenHeight * 0.05,
+                                      right: screenWidth * 0.04,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          /// On Tap Action (payment / enroll)
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.primary,
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: screenWidth * 0.035,
+                                            vertical: screenHeight * 0.008,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                                screenWidth * 0.045),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          banner.buttonText ?? "Enroll Now",
+                                          style: TextStyle(
+                                            fontSize: isTablet ? 14 : 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    // CONTACT DETAILS
+                                    Positioned(
+                                      bottom: screenHeight * 0.015,
+                                      left: screenWidth * 0.025,
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.phone,
+                                              color: Colors.white,
+                                              size: isTablet ? 18 : 14),
+                                          SizedBox(width: screenWidth * 0.015),
+                                          Text(
+                                            "+91${banner.phoneNumber ?? ""}",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: isTablet ? 12 : 10,
+                                            ),
+                                          ),
+                                          SizedBox(width: screenWidth * 0.03),
+                                          Icon(Icons.email_outlined,
+                                              color: Colors.white,
+                                              size: isTablet ? 18 : 14),
+                                          SizedBox(width: screenWidth * 0.015),
+                                          Text(
+                                            banner.email ?? "",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: isTablet ? 12 : 10,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                              Positioned(
-                                top: screenHeight * 0.02,
-                                right: screenWidth * 0.025,
-                                child: TagWidget(
-                                  label: "lifetime_access".tr,
-                                  bgColor: Colors.green,
-                                  fontSize: screenWidth * 0.03,
-                                ),
-                              ),
-                              Positioned(
-                                bottom: screenHeight * 0.07,
-                                left: screenWidth * 0.025,
-                                right: screenWidth * 0.25,
-                                child: Text(
-                                  "Master Flutter with Live Projects",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: isTablet ? 16 : 14,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.2,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              Positioned(
-                                bottom: screenHeight * 0.05,
-                                right: screenWidth * 0.04,
-                                child: ElevatedButton(
-                                  onPressed: () {},
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: screenWidth * 0.035,
-                                      vertical: screenHeight * 0.008,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          screenWidth * 0.045),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    "enroll_now".tr,
-                                    style: TextStyle(
-                                      fontSize: isTablet ? 14 : 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: screenHeight * 0.015,
-                                left: screenWidth * 0.025,
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.phone,
-                                        color: AppColors.background,
-                                        size: isTablet ? 18 : 14),
-                                    SizedBox(width: screenWidth * 0.015),
-                                    Text(
-                                      "+91 9460548809",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: isTablet ? 12 : 10),
-                                    ),
-                                    SizedBox(width: screenWidth * 0.03),
-                                    Icon(Icons.email_outlined,
-                                        color: Colors.white,
-                                        size: isTablet ? 18 : 14),
-                                    SizedBox(width: screenWidth * 0.015),
-                                    Text(
-                                      "Sonaauratech@gmail.com",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: isTablet ? 12 : 10),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            );
+                          },
+                          options: CarouselOptions(
+                            height: screenHeight * 0.27,
+                            viewportFraction: 1.0,
+                            autoPlay: true,
+                            autoPlayInterval: const Duration(seconds: 3),
+                            onPageChanged: (index, reason) {
+                              setState(() => _currentIndex = index);
+                            },
                           ),
                         ),
-                      );
-                    },
-                    options: CarouselOptions(
-                      height: screenHeight * 0.27,
-                      viewportFraction: 1.0,
-                      enlargeCenterPage: true,
-                      autoPlay: true,
-                      autoPlayInterval: const Duration(seconds: 3),
-                      autoPlayCurve: Curves.fastOutSlowIn,
-                      scrollDirection: Axis.horizontal,
-                      onPageChanged: (index, reason) {
-                        setState(() {
-                          _currentIndex = index;
-                        });
-                      },
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.01),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: slideImages.asMap().entries.map((entry) {
-                      return GestureDetector(
-                        onTap: () =>
-                            _carouselController.animateToPage(entry.key),
-                        child: Container(
-                          width: _currentIndex == entry.key ? 15 : 10,
-                          height: 10,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _currentIndex == entry.key
-                                ? Colors.blueAccent
-                                : Colors.grey,
-                          ),
+
+                        // INDICATOR DOTS FROM API LIST
+                        SizedBox(height: screenHeight * 0.01),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: flashdealcontroller.banners
+                              .asMap()
+                              .entries
+                              .map((entry) {
+                            return GestureDetector(
+                              onTap: () =>
+                                  _carouselController.animateToPage(entry.key),
+                              child: Container(
+                                width: _currentIndex == entry.key ? 15 : 10,
+                                height: 10,
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _currentIndex == entry.key
+                                      ? Colors.blueAccent
+                                      : Colors.grey,
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
-                      );
-                    }).toList(),
-                  ),
+                      ],
+                    );
+                  }),
                 ],
               ),
 
-              // Categories Section
-              // Padding(
-              //   padding: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16),
-              //   child: Column(
-              //     crossAxisAlignment: CrossAxisAlignment.start,
-              //     children: [
-              //       SizedBox(height: isTablet ? 24 : 16),
-              //       Row(
-              //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //         children: [
-              //           Text(
-              //             "categories".tr,
-              //             style: TextStyle(
-              //               fontSize: isTablet ? 20 : 18,
-              //               fontWeight: FontWeight.bold,
-              //               color: AppColors.textPrimary,
-              //             ),
-              //           ),
-              //           InkWell(
-              //             onTap: () => Navigator.push(
-              //               context,
-              //               MaterialPageRoute(builder: (_) => CategoryScreen()),
-              //             ),
-              //             child: Text(
-              //               "see_all".tr,
-              //               style: TextStyle(
-              //                 fontSize: isTablet ? 16 : 14,
-              //                 color: AppColors.primary,
-              //               ),
-              //             ),
-              //           ),
-              //         ],
-              //       ),
-              //       SizedBox(height: isTablet ? 16 : 12),
-              //       SizedBox(
-              //         height: isTablet ? 48 : 40,
-              //         child: Obx(() => ListView.builder(
-              //               scrollDirection: Axis.horizontal,
-              //               itemCount: category_controller.categoryList.length,
-              //               itemBuilder: (context, index) {
-              //                 final cat =
-              //                     category_controller.categoryList[index];
-              //                 return Obx(() => Padding(
-              //                       padding: const EdgeInsets.symmetric(
-              //                           horizontal: 6),
-              //                       child: ChoiceChip(
-              //                         checkmarkColor: AppColors.background,
-              //                         side:
-              //                             BorderSide(color: AppColors.primary),
-              //                         chipAnimationStyle: ChipAnimationStyle(
-              //                           enableAnimation: AnimationStyle(
-              //                               curve: Curves.easeInOut),
-              //                         ),
-              //                         label: Text(
-              //                           cat.categoryName ?? "Unknown",
-              //                           style: TextStyle(
-              //                             fontSize: isTablet ? 16 : 14,
-              //                             color: popularCourse_controller
-              //                                         .selectedCategory.value ==
-              //                                     cat.categoryName
-              //                                 ? Colors.white
-              //                                 : Colors.black,
-              //                           ),
-              //                         ),
-              //                         selected: popularCourse_controller
-              //                                 .selectedCategory.value ==
-              //                             cat.categoryName,
-              //                         onSelected: (_) {
-              //                           popularCourse_controller
-              //                               .HomefilterCorse(
-              //                                   cat.categoryName ?? "");
-              //                         },
-              //                         selectedColor: AppColors.primary,
-              //                         backgroundColor: Colors.blueGrey.shade50,
-              //                       ),
-              //                     ));
-              //               },
-              //             )),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-
-              // Popular Courses (Vertical)
               Padding(
                 padding: EdgeInsets.symmetric(
                     horizontal: isTablet ? 24 : 16,
@@ -616,7 +615,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 16.0),
                               child: _buildCourseCardVertical(
-                                coursefee: course.courseFee.toString() ?? "N/A",
+                                coursefee: course.language ?? "N/A",
                                 category: course.courseCategory?.categoryName ??
                                     'Unknown Category',
                                 title: course.courseTitle ?? "Untitled Course",
@@ -728,12 +727,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             return _buildCourseCard(
                               course.courseCategory?.categoryName ??
                                   'Unknown Category',
-                              '₹${course.courseFee.toStringAsFixed(0) ?? "N/A"}',
+                              'Language:- ${course.language ?? "N/A"}',
                               course.courseRating.isNotEmpty
                                   ? course.courseRating
                                   : '0.0',
                               course.numberOfStudents.isNotEmpty
-                                  ? course.numberOfStudents
+                                  ? "Enrolled Student:- ${course.numberOfStudents}"
                                   : '0',
                               course.courseThumbImage.isNotEmpty
                                   ? "https://api.auratechacademy.com/${course.courseThumbImage}"
@@ -757,104 +756,105 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               _buildBrowseByDomainSection(isTablet),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: isTablet ? 32 : 10,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // 🔹 Header Row
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              "upcoming_webinars".tr,
-                              style: TextStyle(
-                                fontSize: isTablet ? 20 : 18,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              maxLines: 1,
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => TopMentorsScreen(
-                                  mentors: mentor_controller.mentorList,
-                                ),
-                              ),
-                            ),
-                            child: Text(
-                              "see_all".tr,
-                              style: TextStyle(
-                                fontSize: isTablet ? 16 : 14,
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              maxLines: 1,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final screenWidth = constraints.maxWidth;
-                        final screenHeight = MediaQuery.of(context).size.height;
-
-                        final cardHeight =
-                            screenHeight * (isTablet ? 0.40 : 0.45);
-                        final cardWidth =
-                            screenWidth * (isTablet ? 0.55 : 0.99);
-
-                        return SizedBox(
-                          height: cardHeight,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            shrinkWrap: true,
-                            physics: const BouncingScrollPhysics(),
-                            itemCount: 5,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 12),
-                            itemBuilder: (context, index) {
-                              return SizedBox(
-                                width: cardWidth,
-                                child: WebinarCardPro(
-                                  title:
-                                      "The Power of Large Language Models: How They Work and Why They Matter",
-                                  date: "22 August 2025",
-                                  time: "06:00 PM IST",
-                                  speaker: "Gaurav Dadhich",
-                                  role: "Founder, Sona Sharma",
-                                  bannerAsset: "assets/images/50%3d.jpg",
-                                  speakerAvatar:
-                                      "https://images.unsplash.com/photo-1533901567451-7a6e68d6cd8f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Zm91bmRlcnxlbnwwfHwwfHx8MA%3D%3D",
-                                  isLive: true,
-                                  isUpcoming: true,
-                                  onTap: () {},
-                                  onRegister: () {},
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
+              _buildUpcomingWebinarsSection(isTablet),
+              // Padding(
+              //   padding: EdgeInsets.symmetric(
+              //     vertical: isTablet ? 32 : 10,
+              //   ),
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     mainAxisSize: MainAxisSize.min,
+              //     children: [
+              //       // 🔹 Header Row
+              //       Padding(
+              //         padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              //         child: Row(
+              //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //           children: [
+              //             Expanded(
+              //               child: Text(
+              //                 "upcoming_webinars".tr,
+              //                 style: TextStyle(
+              //                   fontSize: isTablet ? 20 : 18,
+              //                   fontWeight: FontWeight.bold,
+              //                   color: AppColors.textPrimary,
+              //                   overflow: TextOverflow.ellipsis,
+              //                 ),
+              //                 maxLines: 1,
+              //               ),
+              //             ),
+              //             InkWell(
+              //               onTap: () => Navigator.push(
+              //                 context,
+              //                 MaterialPageRoute(
+              //                   builder: (_) => TopMentorsScreen(
+              //                     mentors: mentor_controller.mentorList,
+              //                   ),
+              //                 ),
+              //               ),
+              //               child: Text(
+              //                 "see_all".tr,
+              //                 style: TextStyle(
+              //                   fontSize: isTablet ? 16 : 14,
+              //                   color: AppColors.primary,
+              //                   fontWeight: FontWeight.w600,
+              //                   overflow: TextOverflow.ellipsis,
+              //                 ),
+              //                 maxLines: 1,
+              //               ),
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //
+              //       const SizedBox(height: 10),
+              //
+              //       LayoutBuilder(
+              //         builder: (context, constraints) {
+              //           final screenWidth = constraints.maxWidth;
+              //           final screenHeight = MediaQuery.of(context).size.height;
+              //
+              //           final cardHeight =
+              //               screenHeight * (isTablet ? 0.40 : 0.45);
+              //           final cardWidth =
+              //               screenWidth * (isTablet ? 0.55 : 0.99);
+              //
+              //           return SizedBox(
+              //             height: cardHeight,
+              //             child: ListView.separated(
+              //               scrollDirection: Axis.horizontal,
+              //               shrinkWrap: true,
+              //               physics: const BouncingScrollPhysics(),
+              //               itemCount: 5,
+              //               separatorBuilder: (_, __) =>
+              //                   const SizedBox(width: 12),
+              //               itemBuilder: (context, index) {
+              //                 return SizedBox(
+              //                   width: cardWidth,
+              //                   child: WebinarCardPro(
+              //                     title:
+              //                         "The Power of Large Language Models: How They Work and Why They Matter",
+              //                     date: "22 August 2025",
+              //                     time: "06:00 PM IST",
+              //                     speaker: "Gaurav Dadhich",
+              //                     role: "Founder, Sona Sharma",
+              //                     bannerAsset: "assets/images/50%3d.jpg",
+              //                     speakerAvatar:
+              //                         "https://images.unsplash.com/photo-1533901567451-7a6e68d6cd8f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Zm91bmRlcnxlbnwwfHwwfHx8MA%3D%3D",
+              //                     isLive: true,
+              //                     isUpcoming: true,
+              //                     onTap: () {},
+              //                     onRegister: () {},
+              //                   ),
+              //                 );
+              //               },
+              //             ),
+              //           );
+              //         },
+              //       ),
+              //     ],
+              //   ),
+              // ),
 
               Padding(
                 padding: EdgeInsets.symmetric(
@@ -1385,20 +1385,189 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Domains Grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isTablet ? 4 : 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.2,
+          Obx(() {
+            if (courseSegmentController.isLoading.value) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                ),
+              );
+            } else if (courseSegmentController.segments.isEmpty) {
+              return Center(
+                child: Text(
+                  'No domains available',
+                  style: TextStyle(
+                    fontSize: isTablet ? 16 : 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              );
+            }
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isTablet ? 4 : 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.2,
+              ),
+              itemCount: courseSegmentController.segments.length,
+              itemBuilder: (context, index) {
+                final domain = courseSegmentController.segments[index];
+                return _DomainCard(
+                  domain: domain,
+                  isTablet: isTablet,
+                  domainIcon: itSectorIcons[index],
+                );
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpcomingWebinarsSection(bool isTablet) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: isTablet ? 32 : 10,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 🔹 Header Row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    "upcoming_webinars".tr,
+                    style: TextStyle(
+                      fontSize: isTablet ? 20 : 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    maxLines: 1,
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    // TODO: yaha “All Webinars” screen pe le ja sakte ho
+                  },
+                  child: Text(
+                    "see_all".tr,
+                    style: TextStyle(
+                      fontSize: isTablet ? 16 : 14,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    maxLines: 1,
+                  ),
+                ),
+              ],
             ),
-            itemCount: domains.length,
-            itemBuilder: (context, index) {
-              final domain = domains[index];
-              return _DomainCard(domain: domain, isTablet: isTablet);
+          ),
+
+          const SizedBox(height: 10),
+
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final screenWidth = constraints.maxWidth;
+              final screenHeight = MediaQuery.of(context).size.height;
+
+              final cardHeight = screenHeight * (isTablet ? 0.40 : 0.45);
+              final cardWidth = screenWidth * (isTablet ? 0.55 : 0.99);
+
+              return SizedBox(
+                height: cardHeight,
+                child: Obx(() {
+                  // 🔄 Loading
+                  if (webinarController.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  // ❌ Error
+                  if (webinarController.errorMessage.isNotEmpty) {
+                    return Center(
+                      child: Text(
+                        webinarController.errorMessage.value,
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: isTablet ? 14 : 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+
+                  // 😶 Empty
+                  if (webinarController.webinars.isEmpty) {
+                    return Center(
+                      child: Text(
+                        "No upcoming webinars available",
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: isTablet ? 14 : 12,
+                        ),
+                      ),
+                    );
+                  }
+
+                  final list = webinarController.webinars;
+
+                  return ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    shrinkWrap: true,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: list.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) {
+                      final webinar = list[index];
+
+                      final dt = _parseDateTime(webinar.dateTime);
+                      final dateText = _formatDate(dt);
+                      final timeText = _formatTime(dt);
+
+                      final bannerUrl = _buildImageUrl(webinar.img);
+
+                      final isLive =
+                          (webinar.key1?.toUpperCase() == "LIVE"); // from API
+                      final isUpcoming =
+                          (webinar.key2?.toUpperCase() == "UPCOMING");
+
+                      return SizedBox(
+                        width: cardWidth,
+                        child: WebinarCardPro(
+                          title: webinar.title ?? "Auratech Webinar",
+                          date: dateText,
+                          time: timeText,
+                          speaker: webinar.speaker ?? "Auratech Mentor",
+                          role: webinar.designation ?? "Mentor",
+                          bannerAsset: bannerUrl,
+                          speakerAvatar:
+                              null, // Agar alag speaker image aaye to yaha set karna
+                          buttonText: webinar.buttonText ?? "Register Now",
+                          isLive: isLive,
+                          isUpcoming: isUpcoming,
+                          onTap: () {
+                            // TODO: webinar detail page pe le jao
+                          },
+                          onRegister: () {
+                            // TODO: register / Razorpay / form page etc
+                          },
+                        ),
+                      );
+                    },
+                  );
+                }),
+              );
             },
           ),
         ],
@@ -1406,38 +1575,38 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  final List<Domain> domains = [
-    Domain(
-      title: 'Networking',
-      icon: Icons.lan_outlined,
-      backgroundColor: Color(0xFF6366F1), // Indigo
-    ),
-    Domain(
-      title: 'Database Management',
-      icon: Icons.storage_outlined,
-      backgroundColor: Color(0xFFEF4444), // Red
-    ),
-    Domain(
-      title: 'Software Testing',
-      icon: Icons.bug_report_outlined,
-      backgroundColor: Color(0xFF3B82F6), // Blue
-    ),
-    Domain(
-      title: 'Project Management',
-      icon: Icons.assignment_outlined,
-      backgroundColor: Color(0xFF8B5CF6), // Purple
-    ),
-    Domain(
-      title: 'Business Analytics',
-      icon: Icons.bar_chart_outlined,
-      backgroundColor: Color(0xFFEC4899), // Pink
-    ),
-    Domain(
-      title: 'IT Support',
-      icon: Icons.support_agent_outlined,
-      backgroundColor: Color(0xFF06B6D4), // Cyan
-    ),
-  ];
+  // final List<Domain> domains = [
+  //   Domain(
+  //     title: 'Networking',
+  //     icon: Icons.lan_outlined,
+  //     backgroundColor: Color(0xFF6366F1), // Indigo
+  //   ),
+  //   Domain(
+  //     title: 'Database Management',
+  //     icon: Icons.storage_outlined,
+  //     backgroundColor: Color(0xFFEF4444), // Red
+  //   ),
+  //   Domain(
+  //     title: 'Software Testing',
+  //     icon: Icons.bug_report_outlined,
+  //     backgroundColor: Color(0xFF3B82F6), // Blue
+  //   ),
+  //   Domain(
+  //     title: 'Project Management',
+  //     icon: Icons.assignment_outlined,
+  //     backgroundColor: Color(0xFF8B5CF6), // Purple
+  //   ),
+  //   Domain(
+  //     title: 'Business Analytics',
+  //     icon: Icons.bar_chart_outlined,
+  //     backgroundColor: Color(0xFFEC4899), // Pink
+  //   ),
+  //   Domain(
+  //     title: 'IT Support',
+  //     icon: Icons.support_agent_outlined,
+  //     backgroundColor: Color(0xFF06B6D4), // Cyan
+  //   ),
+  // ];
   Widget _buildStatsSection(bool isTablet) {
     return Container(
       width: double.infinity,
@@ -1838,7 +2007,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(height: 2),
                   Text(
-                    "Fee: \u20B9$coursefee",
+                    // "Fee: \u20B9$coursefee",
+                    "Language:- $coursefee",
                     style: TextStyle(
                       fontSize: isTablet ? 13 : 12,
                       color: AppColors.primary,
@@ -1992,49 +2162,246 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSuccessStoriesSection(bool isTablet) {
-    final successStories = [
-      {
-        'name': 'Rahul Sharma',
-        'role': 'Flutter Developer',
-        'company': 'Google',
-        'image':
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-        'story':
-            'From zero to Flutter expert in 6 months. Landed my dream job at Google!',
-        'salary': '₹18 LPA',
-        'course': 'Flutter Masterclass'
-      },
-      {
-        'name': 'Priya Patel',
-        'role': 'Data Scientist',
-        'company': 'Microsoft',
-        'image':
-            'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150',
-        'story':
-            'AuraTech helped me transition from mechanical engineering to data science.',
-        'salary': '₹22 LPA',
-        'course': 'Data Science Pro'
-      },
-      {
-        'name': 'Amit Kumar',
-        'role': 'Full Stack Developer',
-        'company': 'Amazon',
-        'image':
-            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-        'story':
-            'The project-based learning approach gave me real-world experience.',
-        'salary': '₹20 LPA',
-        'course': 'Full Stack Development'
-      },
-    ];
+  // Widget _buildSuccessStoriesSection(bool isTablet) {
+  //   final successStories = [
+  //     {
+  //       'name': 'Rahul Sharma',
+  //       'role': 'Flutter Developer',
+  //       'company': 'Google',
+  //       'image':
+  //           'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+  //       'story':
+  //           'From zero to Flutter expert in 6 months. Landed my dream job at Google!',
+  //       'salary': '₹18 LPA',
+  //       'course': 'Flutter Masterclass'
+  //     },
+  //     {
+  //       'name': 'Priya Patel',
+  //       'role': 'Data Scientist',
+  //       'company': 'Microsoft',
+  //       'image':
+  //           'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150',
+  //       'story':
+  //           'AuraTech helped me transition from mechanical engineering to data science.',
+  //       'salary': '₹22 LPA',
+  //       'course': 'Data Science Pro'
+  //     },
+  //     {
+  //       'name': 'Amit Kumar',
+  //       'role': 'Full Stack Developer',
+  //       'company': 'Amazon',
+  //       'image':
+  //           'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+  //       'story':
+  //           'The project-based learning approach gave me real-world experience.',
+  //       'salary': '₹20 LPA',
+  //       'course': 'Full Stack Development'
+  //     },
+  //   ];
+  //
+  //   return Padding(
+  //     padding:
+  //         EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16, vertical: 20),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             Expanded(
+  //               child: Text(
+  //                 "success_stories".tr,
+  //                 style: TextStyle(
+  //                   fontSize: isTablet ? 22 : 18,
+  //                   fontWeight: FontWeight.bold,
+  //                   color: AppColors.textPrimary,
+  //                   overflow: TextOverflow.ellipsis,
+  //                 ),
+  //                 maxLines: 1,
+  //               ),
+  //             ),
+  //             InkWell(
+  //               onTap: () {
+  //                },
+  //               child: Row(
+  //                 mainAxisSize: MainAxisSize
+  //                     .min, // 👈 important: shrink-wraps the right row
+  //                 children: [
+  //                   Text(
+  //                     "see_all".tr,
+  //                     style: TextStyle(
+  //                       fontSize: isTablet ? 16 : 14,
+  //                       color: AppColors.primary,
+  //                       fontWeight: FontWeight.w600,
+  //                     ),
+  //                   ),
+  //                   SizedBox(width: 4),
+  //                   Icon(
+  //                     Icons.arrow_forward_ios_rounded,
+  //                     size: isTablet ? 16 : 14,
+  //                     color: AppColors.primary,
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         SizedBox(height: isTablet ? 16 : 12),
+  //         SizedBox(
+  //           height: isTablet ? 280 : 250,
+  //           child: ListView.builder(
+  //             scrollDirection: Axis.horizontal,
+  //             itemCount: successStoryController.stories.length,
+  //             itemBuilder: (context, index) {
+  //               final story = successStories[index];
+  //               return Padding(
+  //                 padding: const EdgeInsets.only(bottom: 8.0),
+  //                 child: _buildSuccessStoryCard(story, isTablet),
+  //               );
+  //             },
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
+  // Widget _buildSuccessStoryCard(Map<String, dynamic> story, bool isTablet) {
+  //   return Container(
+  //     width: isTablet ? 300 : 280,
+  //     margin: EdgeInsets.only(right: 16),
+  //     decoration: BoxDecoration(
+  //         color: Colors.white,
+  //         borderRadius: BorderRadius.circular(21),
+  //         border: Border.all(color: AppColors.primary, width: 1)),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         // Header with image and basic info
+  //         Container(
+  //           padding: EdgeInsets.all(isTablet ? 20 : 16),
+  //           decoration: BoxDecoration(
+  //             gradient: LinearGradient(
+  //               colors: [
+  //                 AppColors.primary.withOpacity(0.8),
+  //                 AppColors.primary.withOpacity(0.6),
+  //               ],
+  //               begin: Alignment.topLeft,
+  //               end: Alignment.bottomRight,
+  //             ),
+  //             borderRadius: BorderRadius.only(
+  //               topLeft: Radius.circular(20),
+  //               topRight: Radius.circular(20),
+  //             ),
+  //           ),
+  //           child: Row(
+  //             children: [
+  //               CircleAvatar(
+  //                 radius: isTablet ? 30 : 25,
+  //                 backgroundImage: NetworkImage(story['image']),
+  //               ),
+  //               SizedBox(width: 12),
+  //               Expanded(
+  //                 child: Column(
+  //                   crossAxisAlignment: CrossAxisAlignment.start,
+  //                   children: [
+  //                     Text(
+  //                       story['name'],
+  //                       style: TextStyle(
+  //                         fontSize: isTablet ? 18 : 16,
+  //                         fontWeight: FontWeight.bold,
+  //                         color: Colors.white,
+  //                       ),
+  //                     ),
+  //                     SizedBox(height: 4),
+  //                     Text(
+  //                       '${story['role']} at ${story['company']}',
+  //                       style: TextStyle(
+  //                         fontSize: isTablet ? 14 : 12,
+  //                         color: Colors.white.withOpacity(0.9),
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //               Container(
+  //                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  //                 decoration: BoxDecoration(
+  //                   color: Colors.white.withOpacity(0.2),
+  //                   borderRadius: BorderRadius.circular(12),
+  //                 ),
+  //                 child: Text(
+  //                   story['salary'],
+  //                   style: TextStyle(
+  //                     fontSize: isTablet ? 14 : 12,
+  //                     color: Colors.white,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //
+  //         // Story content
+  //         Expanded(
+  //           child: Padding(
+  //             padding: EdgeInsets.all(isTablet ? 20 : 16),
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   '"${story['story']}"',
+  //                   style: TextStyle(
+  //                     fontSize: isTablet ? 15 : 13,
+  //                     color: AppColors.textSecondary,
+  //                     fontStyle: FontStyle.italic,
+  //                     height: 1.4,
+  //                   ),
+  //                   maxLines: 3,
+  //                   overflow: TextOverflow.ellipsis,
+  //                 ),
+  //                 Spacer(),
+  //                 Container(
+  //                   padding: EdgeInsets.all(12),
+  //                   decoration: BoxDecoration(
+  //                     color: AppColors.primary.withOpacity(0.1),
+  //                     borderRadius: BorderRadius.circular(12),
+  //                   ),
+  //                   child: Row(
+  //                     children: [
+  //                       Icon(Icons.school_rounded,
+  //                           color: AppColors.primary, size: isTablet ? 20 : 18),
+  //                       SizedBox(width: 8),
+  //                       Expanded(
+  //                         child: Text(
+  //                           'Completed: ${story['course']}',
+  //                           style: TextStyle(
+  //                             fontSize: isTablet ? 14 : 12,
+  //                             color: AppColors.primary,
+  //                             fontWeight: FontWeight.w600,
+  //                           ),
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+  Widget _buildSuccessStoriesSection(bool isTablet) {
     return Padding(
       padding:
           EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16, vertical: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 🔹 Header row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -2052,11 +2419,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               InkWell(
                 onTap: () {
-                  // TODO: View all success stories
+                  // TODO: Navigate to full Success Stories screen if needed
                 },
                 child: Row(
-                  mainAxisSize: MainAxisSize
-                      .min, // 👈 important: shrink-wraps the right row
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       "see_all".tr,
@@ -2066,7 +2432,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: isTablet ? 16 : 14,
@@ -2078,37 +2444,98 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           SizedBox(height: isTablet ? 16 : 12),
+
+          // 🔹 Reactive list from controller
           SizedBox(
             height: isTablet ? 280 : 250,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: successStories.length,
-              itemBuilder: (context, index) {
-                final story = successStories[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: _buildSuccessStoryCard(story, isTablet),
+            child: Obx(() {
+              if (successStoryController.isLoading.value) {
+                return const Center(
+                  child: CircularProgressIndicator(),
                 );
-              },
-            ),
+              }
+
+              if (successStoryController.errorMessage.isNotEmpty) {
+                return Center(
+                  child: Text(
+                    successStoryController.errorMessage.value,
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: isTablet ? 14 : 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
+
+              if (successStoryController.stories.isEmpty) {
+                return Center(
+                  child: Text(
+                    "No success stories available",
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: isTablet ? 14 : 12,
+                    ),
+                  ),
+                );
+              }
+
+              final list = successStoryController.stories;
+
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: list.length,
+                itemBuilder: (context, index) {
+                  final story = list[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: _buildSuccessStoryCard(story, isTablet),
+                  );
+                },
+              );
+            }),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSuccessStoryCard(Map<String, dynamic> story, bool isTablet) {
+  Widget _buildSuccessStoryCard(SuccessStoryModel story, bool isTablet) {
+    // 🔹 Safe mapping
+    final name = story.name ?? 'Student';
+    final placement = story.placement ?? '';
+    final package = story.package ?? '';
+    final description = story.description ?? '';
+    final courseTitle = story.course?.title ?? 'Auratech Academy Course';
+
+    // Placement se role & company nikalne ki light logic:
+    String roleText = placement;
+    String companyText = '';
+    if (placement.contains(' at ')) {
+      final parts = placement.split(' at ');
+      roleText = parts[0];
+      companyText = parts.length > 1 ? parts[1] : '';
+    }
+
+    // Profile image: Instructor ka image ya course image ya placeholder
+    final String imageUrl = story.course?.courseInstructor?.image != null
+        ? "https://api.auratechacademy.com${story.course!.courseInstructor!.image}"
+        : (story.course?.courseImg != null
+            ? "https://api.auratechacademy.com${story.course!.courseImg}"
+            : "https://i.pravatar.cc/150?u=$name");
+
     return Container(
       width: isTablet ? 300 : 280,
-      margin: EdgeInsets.only(right: 16),
+      margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(21),
-          border: Border.all(color: AppColors.primary, width: 1)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(21),
+        border: Border.all(color: AppColors.primary, width: 1),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with image and basic info
+          // 🔹 Header with image + basic info
           Container(
             padding: EdgeInsets.all(isTablet ? 20 : 16),
             decoration: BoxDecoration(
@@ -2120,7 +2547,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
               ),
@@ -2129,24 +2556,26 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 CircleAvatar(
                   radius: isTablet ? 30 : 25,
-                  backgroundImage: NetworkImage(story['image']),
+                  backgroundImage: NetworkImage(imageUrl),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        story['name'],
+                        name,
                         style: TextStyle(
                           fontSize: isTablet ? 18 : 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
-                        '${story['role']} at ${story['company']}',
+                        companyText.isNotEmpty
+                            ? '$roleText at $companyText'
+                            : roleText,
                         style: TextStyle(
                           fontSize: isTablet ? 14 : 12,
                           color: Colors.white.withOpacity(0.9),
@@ -2155,26 +2584,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    story['salary'],
-                    style: TextStyle(
-                      fontSize: isTablet ? 14 : 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                if (package.isNotEmpty)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      package,
+                      style: TextStyle(
+                        fontSize: isTablet ? 14 : 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
 
-          // Story content
+          // 🔹 Story content
           Expanded(
             child: Padding(
               padding: EdgeInsets.all(isTablet ? 20 : 16),
@@ -2182,7 +2613,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '"${story['story']}"',
+                    '"$description"',
                     style: TextStyle(
                       fontSize: isTablet ? 15 : 13,
                       color: AppColors.textSecondary,
@@ -2192,21 +2623,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Container(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.school_rounded,
-                            color: AppColors.primary, size: isTablet ? 20 : 18),
-                        SizedBox(width: 8),
+                        Icon(
+                          Icons.school_rounded,
+                          color: AppColors.primary,
+                          size: isTablet ? 20 : 18,
+                        ),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Completed: ${story['course']}',
+                            // yaha agar localize karna ho to 'completed_course'.tr, etc
+                            'Completed: $courseTitle',
                             style: TextStyle(
                               fontSize: isTablet ? 14 : 12,
                               color: AppColors.primary,
@@ -2513,25 +2948,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class Domain {
-  final String title;
-  final IconData icon;
-  final Color backgroundColor;
-
-  const Domain({
-    required this.title,
-    required this.icon,
-    required this.backgroundColor,
-  });
-}
+// class Domain {
+//   final String title;
+//   final IconData icon;
+//   final Color backgroundColor;
+//
+//   const Domain({
+//     required this.title,
+//     required this.icon,
+//     required this.backgroundColor,
+//   });
+// }
 
 class _DomainCard extends StatelessWidget {
-  final Domain domain;
+  final IconData domainIcon;
+  final csmodel.CourseSegment domain;
   final bool isTablet;
 
-  const _DomainCard({
+  _DomainCard({
     required this.domain,
     required this.isTablet,
+    required this.domainIcon,
   });
 
   @override
@@ -2549,8 +2986,9 @@ class _DomainCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              domain.backgroundColor.withOpacity(0.1),
-              domain.backgroundColor.withOpacity(0.05),
+              Colors.blue.shade50,
+              Colors.blue.shade100,
+              Colors.white,
             ],
           ),
         ),
@@ -2561,7 +2999,7 @@ class _DomainCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             onTap: () {
               // Handle domain tap
-              print('Tapped on ${domain.title}');
+              print('Tapped on ${domain.name}');
             },
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -2573,11 +3011,11 @@ class _DomainCard extends StatelessWidget {
                     width: isTablet ? 50 : 40,
                     height: isTablet ? 50 : 40,
                     decoration: BoxDecoration(
-                      color: domain.backgroundColor,
+                      color: Color(0xFF3B82F6),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
-                      domain.icon,
+                      domainIcon,
                       color: Colors.white,
                       size: isTablet ? 24 : 20,
                     ),
@@ -2585,9 +3023,8 @@ class _DomainCard extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // Domain Title
                   Text(
-                    domain.title,
+                    domain.name.toString() ?? "Unknown",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,

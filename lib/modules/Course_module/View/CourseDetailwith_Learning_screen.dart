@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
+import 'package:printing/printing.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:http/http.dart' as http;
@@ -10,7 +11,9 @@ import 'package:open_filex/open_filex.dart';
 import '../../../constant/constant_colors.dart';
 import '../Model/Course_Master_Model.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
+import 'package:intl/intl.dart';
+ import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
 class CourseDetailPage extends StatefulWidget {
   final CourseMaster course;
   const CourseDetailPage({super.key, required this.course});
@@ -186,13 +189,22 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                   ),
                   onOpenCertificate: () => Navigator.push(
                     context,
+                    // MaterialPageRoute(
+                    //   builder: (_) => CertificatePage(
+                    //     title: c.courseTitle,
+                    //     previewImage: 'https://i.imgur.com/9KQxR9v.png',
+                    //     downloadUrl:
+                    //         'https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf',
+                    //     priceText: '₹349 (Inc. GST)',
+                    //   ),
+                    // ),
                     MaterialPageRoute(
                       builder: (_) => CertificatePage(
-                        title: c.courseTitle,
-                        previewImage: 'https://i.imgur.com/9KQxR9v.png',
-                        downloadUrl:
-                            'https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf',
+                        courseTitle: 'Flutter App Development',
+                        userName: 'Saru Khan',
+                        completedOn: DateTime.now(),
                         priceText: '₹349 (Inc. GST)',
+
                       ),
                     ),
                   ),
@@ -839,29 +851,6 @@ class _InfoPlaceholder extends StatelessWidget {
   }
 }
 
-class _KVRow extends StatelessWidget {
-  final String k;
-  final String v;
-  const _KVRow({required this.k, required this.v});
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text('$k: ',
-            style: const TextStyle(
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-            )),
-        Expanded(
-          child: Text(
-            v,
-            style: const TextStyle(color: AppColors.textSecondary),
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class _KVChip extends StatelessWidget {
   final String k;
@@ -1436,27 +1425,117 @@ class _QuizPageState extends State<QuizPage> {
 /// =================================================================
 /// CERTIFICATE PAGE
 /// =================================================================
+// class CertificatePage extends StatelessWidget {
+//   final String title;
+//   final String previewImage; // sample image
+//   final String downloadUrl; // pdf to download
+//   final String priceText;
+//
+//   const CertificatePage({
+//     super.key,
+//     required this.title,
+//     required this.previewImage,
+//     required this.downloadUrl,
+//     required this.priceText,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         backgroundColor: AppColors.primary,
+//         foregroundColor: Colors.white,
+//         title: Text('$title • Certificate', overflow: TextOverflow.ellipsis),
+//       ),
+//       backgroundColor: AppColors.background,
+//       body: ListView(
+//         padding: const EdgeInsets.all(16),
+//         children: [
+//           Card(
+//             color: AppColors.surface,
+//             elevation: 0,
+//             shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(16),
+//               side: const BorderSide(color: AppColors.border),
+//             ),
+//             child: Padding(
+//               padding: const EdgeInsets.all(14),
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   const Text('Certificate of Completion',
+//                       style: TextStyle(
+//                           fontWeight: FontWeight.w800,
+//                           fontSize: 18,
+//                           color: AppColors.textPrimary)),
+//                   const SizedBox(height: 6),
+//                   Text(priceText,
+//                       style: const TextStyle(color: AppColors.textSecondary)),
+//                   const SizedBox(height: 12),
+//                   ClipRRect(
+//                     borderRadius: BorderRadius.circular(12),
+//                     child: Image.network(previewImage,
+//                         height: 180, fit: BoxFit.cover),
+//                   ),
+//                   const SizedBox(height: 14),
+//                   Row(
+//                     children: [
+//                       Expanded(
+//                         child: ElevatedButton(
+//                           style: ElevatedButton.styleFrom(
+//                             backgroundColor: AppColors.primary,
+//                             foregroundColor: Colors.white,
+//                             elevation: 0,
+//                             shape: RoundedRectangleBorder(
+//                                 borderRadius: BorderRadius.circular(12)),
+//                           ),
+//                           onPressed: () => launchUrl(Uri.parse(downloadUrl),
+//                               mode: LaunchMode.externalApplication),
+//                           child: const Text('Buy / Download Sample'),
+//                         ),
+//                       ),
+//                     ],
+//                   )
+//                 ],
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+
+
+
+
+
+
 class CertificatePage extends StatelessWidget {
-  final String title;
-  final String previewImage; // sample image
-  final String downloadUrl; // pdf to download
-  final String priceText;
+  final String courseTitle;
+  final String userName;               // 🔥 required (passed via Navigator)
+  final DateTime completedOn;
+  final String priceText;              // optional label (e.g., “Free sample”/“₹299”)
 
   const CertificatePage({
     super.key,
-    required this.title,
-    required this.previewImage,
-    required this.downloadUrl,
-    required this.priceText,
+    required this.courseTitle,
+    required this.userName,
+    required this.completedOn,
+    this.priceText = '',
   });
 
+  // ---------------------- UI ----------------------
   @override
   Widget build(BuildContext context) {
+    final dateStr = DateFormat.yMMMMd().format(completedOn);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        title: Text('$title • Certificate', overflow: TextOverflow.ellipsis),
+        title: Text('$courseTitle • Certificate', overflow: TextOverflow.ellipsis),
       ),
       backgroundColor: AppColors.background,
       body: ListView(
@@ -1474,25 +1553,54 @@ class CertificatePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Certificate of Completion',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 18,
-                          color: AppColors.textPrimary)),
-                  const SizedBox(height: 6),
-                  Text(priceText,
-                      style: const TextStyle(color: AppColors.textSecondary)),
-                  const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(previewImage,
-                        height: 180, fit: BoxFit.cover),
+                  // header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Auratech Academy',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                            color: AppColors.textPrimary,
+                          )),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(.08),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: const Text('Verified Certificate',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            )),
+                      )
+                    ],
                   ),
+                  if (priceText.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(priceText, style: const TextStyle(color: AppColors.textSecondary)),
+                  ],
+
+                  const SizedBox(height: 12),
+
+                  // live preview (vector UI, not a network image)
+                  AspectRatio(
+                    aspectRatio: 6 / 7,
+                    child: _CertificatePreview(
+                      userName: userName,
+                      courseTitle: courseTitle,
+                      completedOn: dateStr,
+                    ),
+                  ),
+
                   const SizedBox(height: 14),
+
                   Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.picture_as_pdf_rounded),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
@@ -1500,15 +1608,370 @@ class CertificatePage extends StatelessWidget {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12)),
                           ),
-                          onPressed: () => launchUrl(Uri.parse(downloadUrl),
-                              mode: LaunchMode.externalApplication),
-                          child: const Text('Buy / Download Sample'),
+                          onPressed: () => _downloadPdf(context),
+                          label: const Text('Download PDF',style: TextStyle(fontSize: 12.5),),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.share_rounded),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: AppColors.primary),
+                            foregroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () => _sharePdf(context),
+                          label: const Text('Share'),
                         ),
                       ),
                     ],
                   )
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------- PDF GEN ----------------------
+  Future<pw.Document> _buildPdf() async {
+    final pdf = pw.Document();
+
+    final dateStr = DateFormat.yMMMMd().format(completedOn);
+
+    final primary = const PdfColor.fromInt(0xFF2962FF); // tweak to your theme
+    final textPrimary = const PdfColor.fromInt(0xFF111827);
+    final textSecondary = const PdfColor.fromInt(0xFF6B7280);
+    final border = const PdfColor.fromInt(0xFFE5E7EB);
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4.landscape,
+        margin: const pw.EdgeInsets.all(24),
+        build: (context) => pw.Container(
+          decoration: pw.BoxDecoration(
+            border: pw.Border.all(color: border, width: 2),
+          ),
+          child: pw.Stack(
+            children: [
+              // subtle watermark
+              pw.Positioned.fill(
+                child: pw.Center(
+                  child: pw.Transform.rotate(
+                    angle: -0.35,
+                    child: pw.Text(
+                      'AURATECH ACADEMY',
+                      style: pw.TextStyle(
+                        color: primary,
+                        fontSize: 60,
+                        fontWeight: pw.FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(28),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    // header row
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      children: [
+                        pw.Text('Auratech Academy',
+                            style: pw.TextStyle(
+                              color: textPrimary,
+                              fontWeight: pw.FontWeight.bold,
+                              fontSize: 20,
+                            )),
+                        pw.Container(
+                          padding: const pw.EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: pw.BoxDecoration(
+                            color: primary,
+                            borderRadius: pw.BorderRadius.circular(16),
+                          ),
+                          child: pw.Text('Verified Certificate',
+                              style: pw.TextStyle(
+                                color: primary,
+                                fontWeight: pw.FontWeight.bold,
+                              )),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 24),
+
+                    // title block
+                    pw.Text('CERTIFICATE',
+                        style: pw.TextStyle(
+                          fontSize: 38,
+                          letterSpacing: 2,
+                          color: textPrimary,
+                          fontWeight: pw.FontWeight.bold,
+                        )),
+                    pw.SizedBox(height: 4),
+                    pw.Text('OF COMPLETION',
+                        style: pw.TextStyle(
+                          fontSize: 16,
+                          letterSpacing: 3,
+                          color: textSecondary,
+                        )),
+                    pw.SizedBox(height: 28),
+
+                    pw.Text('Presented to',
+                        style: pw.TextStyle(
+                          color: textSecondary,
+                          fontSize: 12,
+                        )),
+                    pw.SizedBox(height: 4),
+                    pw.Text(userName,
+                        style: pw.TextStyle(
+                          color: textPrimary,
+                          fontSize: 28,
+                          fontWeight: pw.FontWeight.bold,
+                        )),
+                    pw.SizedBox(height: 14),
+
+                    pw.Text(
+                      'For successfully completing the online course',
+                      style: pw.TextStyle(color: textSecondary, fontSize: 12),
+                    ),
+                    pw.SizedBox(height: 6),
+
+                    pw.Text(
+                      courseTitle,
+                      style: pw.TextStyle(
+                        color: textPrimary,
+                        fontSize: 18,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Text('Course completed on $dateStr',
+                        style: pw.TextStyle(color: textSecondary, fontSize: 12)),
+                    pw.Spacer(),
+
+                    // footer row
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Container(height: 1, width: 200, color: border),
+                            pw.SizedBox(height: 4),
+                            pw.Text('Harish Subramanian',
+                                style: pw.TextStyle(
+                                    color: textPrimary,
+                                    fontWeight: pw.FontWeight.bold)),
+                            pw.Text('Academic Director, Auratech Academy',
+                                style: pw.TextStyle(color: textSecondary, fontSize: 10)),
+                          ],
+                        ),
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.end,
+                          children: [
+                            pw.Text('Verify Authenticity',
+                                style: pw.TextStyle(
+                                  color: textSecondary,
+                                  fontSize: 10,
+                                )),
+                            pw.SizedBox(height: 4),
+                            pw.BarcodeWidget(
+                              data:
+                              'AURATECH|$userName|$courseTitle|$dateStr', // simple verifiable payload
+                              barcode: pw.Barcode.qrCode(),
+                              width: 64,
+                              height: 64,
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return pdf;
+  }
+
+  Future<void> _downloadPdf(BuildContext context) async {
+    final doc = await _buildPdf();
+    await Printing.layoutPdf(onLayout: (_) => doc.save());
+  }
+
+  Future<void> _sharePdf(BuildContext context) async {
+    final doc = await _buildPdf();
+    await Printing.sharePdf(
+      bytes: await doc.save(),
+      filename: 'Auratech_Certificate_$userName.pdf',
+    );
+  }
+}
+
+// ---------------------- LIVE PREVIEW WIDGET ----------------------
+class _CertificatePreview extends StatelessWidget {
+  final String userName;
+  final String courseTitle;
+  final String completedOn;
+
+  const _CertificatePreview({
+    required this.userName,
+    required this.courseTitle,
+    required this.completedOn,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // watermark
+          Center(
+            child: Transform.rotate(
+              angle: -0.35,
+              child: Text(
+                'AURATECH ACADEMY',
+                style: TextStyle(
+                  color: AppColors.primary.withOpacity(0.05),
+                  fontSize: 40,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 2,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // header row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Auratech Academy',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: AppColors.textPrimary,
+                        )),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(.08),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Text(
+                        'Verified Certificate',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'CERTIFICATE',
+                  style: TextStyle(
+                    fontSize: 28,
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'OF COMPLETION',
+                  style: TextStyle(
+                    fontSize: 12,
+                    letterSpacing: 3,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                const Text('Presented to',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                const SizedBox(height: 4),
+                Text(
+                  userName,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'For successfully completing the online course',
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Text(courseTitle,
+                    style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14)),
+                const SizedBox(height: 4),
+                Text('Course completed on $completedOn',
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                const Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        SizedBox(height: 1, width: 160,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(color: Color(0xFFE5E7EB)),
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text('Sona Sharma',
+                            style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12)),
+                        Text('Academic Director, Auratech Academy',
+                            style:
+                            TextStyle(color: AppColors.textSecondary, fontSize: 10)),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: const [
+                        Text('Verify Authenticity',
+                            style: TextStyle(color: AppColors.textSecondary, fontSize: 10)),
+                        SizedBox(height: 6),
+                        Icon(Icons.qr_code_2_rounded, size: 40, color: AppColors.textSecondary),
+                      ],
+                    ),
+                  ],
+                )
+              ],
             ),
           ),
         ],
