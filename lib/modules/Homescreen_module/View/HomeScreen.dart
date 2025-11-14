@@ -26,7 +26,9 @@ import '../Controller/SuccessStoryController.dart';
 import '../Controller/Testimonial_controller.dart';
 import '../Controller/Webminar_Controller.dart';
 import '../Model/SuccessStoryModel.dart';
+import '../Model/Webminar_Model.dart';
 import 'Search_Screen.dart';
+import 'SegmentBaseSearchPage.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -46,6 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final FlashBannerController flashdealcontroller = Get.find();
   final SuccessStoryController successStoryController = Get.find();
   final WebinarController webinarController = Get.find();
+  final ScrollController scrollController = ScrollController();
+  final GlobalKey coursesKey = GlobalKey();
+
   final String baseUrl = "https://api.auratechacademy.com/";
   final List<String> slideImages = [
     "assets/images/50%off.jpg",
@@ -121,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _formatTime(DateTime? dt) {
     if (dt == null) return "";
-    return DateFormat("hh:mm a").format(dt) + " IST"; // 06:00 PM IST
+    return "${DateFormat("hh:mm a").format(dt)} IST"; // 06:00 PM IST
   }
 
   String _buildImageUrl(String? path) {
@@ -130,6 +135,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (path.startsWith("http")) return path;
     return "https://api.auratechacademy.com$path";
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -607,6 +618,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
                       return Column(
+                        key: coursesKey,
                         children: List.generate(
                           popularCourse_controller.HomeFileterCourse.length,
                           (index) {
@@ -1560,7 +1572,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             // TODO: webinar detail page pe le jao
                           },
                           onRegister: () {
-                            // TODO: register / Razorpay / form page etc
+                            showWebinarRegistrationSheet(
+                              context,
+                              webinar: webinar,
+                            );
                           },
                         ),
                       );
@@ -2891,7 +2906,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Scrollable.ensureVisible(
+                          coursesKey.currentContext!,
+                          duration: Duration(milliseconds: 600),
+                          curve: Curves.easeInOut,
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: EdgeInsets.symmetric(
@@ -2948,24 +2969,289 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// class Domain {
-//   final String title;
-//   final IconData icon;
-//   final Color backgroundColor;
-//
-//   const Domain({
-//     required this.title,
-//     required this.icon,
-//     required this.backgroundColor,
-//   });
-// }
+Future<void> showWebinarRegistrationSheet(
+  BuildContext context, {
+  required WebinarModel webinar,
+}) async {
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (ctx) {
+      return WebinarRegistrationForm(webinar: webinar);
+    },
+  );
+
+  // showModalBottomSheet(
+  //   context: context,
+  //   isScrollControlled: true,
+  //   backgroundColor: Colors.white,
+  //   shape: const RoundedRectangleBorder(
+  //     borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+  //   ),
+  //   builder: (ctx) {
+  //     return Padding(
+  //       padding: EdgeInsets.only(
+  //         bottom: MediaQuery.of(ctx).viewInsets.bottom,
+  //       ),
+  //       child: WebinarRegistrationForm(webinar: webinar),
+  //     );
+  //   },
+  // );
+}
+
+class WebinarRegistrationForm extends StatefulWidget {
+  final WebinarModel webinar;
+
+  const WebinarRegistrationForm({
+    super.key,
+    required this.webinar,
+  });
+
+  @override
+  State<WebinarRegistrationForm> createState() =>
+      _WebinarRegistrationFormState();
+}
+
+class _WebinarRegistrationFormState extends State<WebinarRegistrationForm> {
+  final _formKey = GlobalKey<FormState>();
+
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _noteCtrl = TextEditingController();
+
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _phoneCtrl.dispose();
+    _noteCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      // 👇 yaha apna payload banao
+      final payload = {
+        "webinar_id": widget.webinar.id,
+        "webinar_title": widget.webinar.title,
+        "name": _nameCtrl.text.trim(),
+        "email": _emailCtrl.text.trim(),
+        "phone": _phoneCtrl.text.trim(),
+        "note": _noteCtrl.text.trim(),
+      };
+
+      // TODO: yaha apna real API call jo bhi hai, use karo
+      // Example:
+      // await ApiServices().post(
+      //   "webinar_registration/",
+      //   body: payload,
+      // );
+
+      await Future.delayed(const Duration(seconds: 1));
+
+      // ✅ Success UI
+      Get.back(); // close bottom sheet
+      Get.snackbar(
+        "Registered",
+        "You have successfully registered for the webinar.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.shade600,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(12),
+      );
+    } catch (e) {
+      setState(() => _isSubmitting = false);
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade600,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(12),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.width > 600;
+
+    return SafeArea(
+      top: false,
+      child: SingleChildScrollView(
+        // scroll ki permission
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 10,
+          // keyboard khulte hi niche space automatically add ho jayega
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🔹 Drag handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            Text(
+              "Register for Webinar",
+              style: TextStyle(
+                fontSize: isTablet ? 20 : 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+
+            Text(
+              widget.webinar.title ?? "Auratech Webinar",
+              style: TextStyle(
+                fontSize: isTablet ? 14 : 13,
+                color: AppColors.textSecondary,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 16),
+
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _nameCtrl,
+                    decoration: const InputDecoration(
+                      labelText: "Full Name",
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return "Name is required";
+                      }
+                      if (v.trim().length < 3) {
+                        return "Please enter a valid name";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: "Email Address",
+                      prefixIcon: Icon(Icons.email_outlined),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return "Email is required";
+                      }
+                      final emailRegex =
+                          RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
+                      if (!emailRegex.hasMatch(v.trim())) {
+                        return "Please enter a valid email";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: "Mobile Number",
+                      prefixIcon: Icon(Icons.phone_android_outlined),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return "Mobile number is required";
+                      }
+                      if (v.trim().length < 10) {
+                        return "Please enter a valid mobile number";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _noteCtrl,
+                    maxLines: 1,
+                    decoration: const InputDecoration(
+                      labelText: "Note (optional)",
+                      alignLabelWithHint: true,
+                      prefixIcon: Icon(Icons.notes_outlined),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: EdgeInsets.symmetric(
+                          vertical: isTablet ? 16 : 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              "Confirm Registration",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _DomainCard extends StatelessWidget {
   final IconData domainIcon;
   final csmodel.CourseSegment domain;
   final bool isTablet;
 
-  _DomainCard({
+  const _DomainCard({
     required this.domain,
     required this.isTablet,
     required this.domainIcon,
@@ -3000,6 +3286,11 @@ class _DomainCard extends StatelessWidget {
             onTap: () {
               // Handle domain tap
               print('Tapped on ${domain.name}');
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Segmentbasesearchpage(),
+                  ));
             },
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -3095,56 +3386,6 @@ class ModernSkillsSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
       child: Center(child: content),
     );
-  }
-}
-
-class _LeftTextBlock extends StatelessWidget {
-  const _LeftTextBlock({
-    required this.titleKicker,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final String titleKicker;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    // Slightly smaller, tighter typography
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          titleKicker.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 12.5,
-            letterSpacing: 1.2,
-            fontWeight: FontWeight.w800,
-            color: AppColors.primary,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 36, // smaller than display sizes
-            height: 1.05,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: const Text(
-            // passed in via ctor; use const text style and dynamic string
-            '',
-            style: TextStyle(), // placeholder, overridden below
-          ),
-        ),
-      ],
-    ).applySubtitle(subtitle);
   }
 }
 

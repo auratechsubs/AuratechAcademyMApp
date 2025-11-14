@@ -205,6 +205,7 @@ class CourseMaster {
   final String quizzes;
   final String createDate;
   final String updateDate;
+  final bool is_enroll;
 
   CourseMaster({
     required this.id,
@@ -232,6 +233,7 @@ class CourseMaster {
     required this.quizzes,
     required this.createDate,
     required this.updateDate,
+    required this.is_enroll,
   });
 
   factory CourseMaster.fromJson(Map<String, dynamic> json) {
@@ -255,6 +257,11 @@ class CourseMaster {
       description: json['Description'] ?? '',
       topCourse: json['CourseMaster_topcourse'] ?? 0,
       courseFee: (json['CourseMaster_fee'] ?? 0).toDouble(),
+      is_enroll: json['is_enroll'] == true ||
+          json['is_enroll'] == 1 ||
+          json['is_enroll'] == "1" ||
+          json['is_enroll'] == "true",
+
       videoImage: json['Video_img'],
       courseText: json['course_text'] ?? '',
       courseRating: json['CourseMaster_rating'] ?? '',

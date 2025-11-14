@@ -1,3 +1,4 @@
+
 import 'package:auratech_academy/utils/storageservice.dart';
 import 'package:auratech_academy/utils/util_klass.dart';
 import 'package:flutter/material.dart';
@@ -48,6 +49,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     super.initState();
     getcoursereview();
     _tabController = TabController(length: 3, vsync: this);
+   // print("API is_enroll => ${json['is_enroll']}");
+    print("Model is_enroll => ${widget.course.is_enroll}");
   }
 
   @override
@@ -767,7 +770,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                         );
                       }),
                       const SizedBox(width: 16),
-                      widget.course.status == 1
+
+           widget.course.is_enroll
                           ? ElevatedButton(
                               onPressed: () => Get.to(CourseDetailPage(course: widget.course,)),
                               style: ElevatedButton.styleFrom(
