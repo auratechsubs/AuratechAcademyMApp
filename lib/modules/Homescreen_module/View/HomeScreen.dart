@@ -29,6 +29,7 @@ import '../Model/SuccessStoryModel.dart';
 import '../Model/Webminar_Model.dart';
 import 'Search_Screen.dart';
 import 'SegmentBaseSearchPage.dart';
+import 'package:video_player/video_player.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -1366,7 +1367,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-
+              // succes story vidoe section
+              SizedBox(height: isTablet ? 32 : 16),
+              SuccessStoriesSection(),
               // Bottom Padding
               _buildFooterSection(isTablet),
               SizedBox(height: isTablet ? 24 : 16),
@@ -3289,7 +3292,8 @@ class _DomainCard extends StatelessWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Segmentbasesearchpage(),
+                    builder: (context) =>
+                        Segmentbasesearchpage(initialSegment: '${domain.name}'),
                   ));
             },
             child: Padding(
@@ -3504,6 +3508,413 @@ class _SkillPillState extends State<_SkillPill> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// succes stories video section
+
+/// --------------------------------------------
+///  MODEL: SuccessStory
+/// --------------------------------------------
+class SuccessStory {
+  final String name;
+  final String course;
+  final String company;
+  final String package;
+  final String videoUrl;
+
+  const SuccessStory({
+    required this.name,
+    required this.course,
+    required this.company,
+    required this.package,
+    required this.videoUrl,
+  });
+}
+
+/// --------------------------------------------
+///  SECTION WIDGET: SuccessStoriesSection
+/// --------------------------------------------
+class SuccessStoriesSection extends StatefulWidget {
+  const SuccessStoriesSection({super.key});
+
+  @override
+  State<SuccessStoriesSection> createState() => _SuccessStoriesSectionState();
+}
+
+class _SuccessStoriesSectionState extends State<SuccessStoriesSection> {
+  final PageController _pageController = PageController(
+    viewportFraction: 0.9, // thoda side ka next card dikhe, premium feel
+  );
+
+  // Dummy 5 students – yaha baad me API / Firestore ka data chipka dena
+  late final List<SuccessStory> _stories = [
+    const SuccessStory(
+      name: 'Aditi Sharma',
+      course: 'Flutter Full-Stack Pro',
+      company: 'TCS Digital',
+      package: '₹10 LPA',
+      videoUrl:
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    ),
+    const SuccessStory(
+      name: 'Rahul Verma',
+      course: 'Android + Flutter Mastery',
+      company: 'Infosys',
+      package: '₹7.2 LPA',
+      videoUrl:
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    ),
+    const SuccessStory(
+      name: 'Sneha Patel',
+      course: 'UI/UX + Flutter Bootcamp',
+      company: 'Zomato',
+      package: '₹9 LPA',
+      videoUrl:
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+    ),
+    const SuccessStory(
+      name: 'Arjun Mehta',
+      course: 'Backend + Flutter Expert',
+      company: 'Swiggy',
+      package: '₹8.5 LPA',
+      videoUrl:
+          'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+    ),
+    const SuccessStory(
+      name: 'Kritika Singh',
+      course: 'Hybrid App Dev Program',
+      company: 'Paytm',
+      package: '₹11 LPA',
+      videoUrl:
+          'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+    ),
+  ];
+
+  final List<VideoPlayerController?> _videoControllers = [];
+  bool _isInitialized = false;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _initVideoControllers();
+  }
+
+  Future<void> _initVideoControllers() async {
+    // Video controllers create
+    for (final story in _stories) {
+      final controller = VideoPlayerController.networkUrl(
+        Uri.parse(story.videoUrl),
+      );
+      _videoControllers.add(controller);
+    }
+
+    // Sabko initialize + looping enable
+    await Future.wait(
+      _videoControllers.map((c) async {
+        await c!.initialize();
+        c.setLooping(true);
+      }),
+    );
+
+    // UI update
+    if (!mounted) return;
+    setState(() {
+      _isInitialized = true;
+    });
+
+    // First time: first video autoplay
+    _playVideoAt(0);
+  }
+
+  void _playVideoAt(int index) {
+    for (int i = 0; i < _videoControllers.length; i++) {
+      final controller = _videoControllers[i];
+      if (controller == null) continue;
+
+      if (i == index) {
+        if (!controller.value.isPlaying) {
+          controller.play();
+        }
+      } else {
+        if (controller.value.isPlaying) {
+          controller.pause();
+        }
+        controller.seekTo(Duration.zero);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final c in _videoControllers) {
+      c?.dispose();
+    }
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return SizedBox(
+      height: 400,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Text(
+            //   'Success Stories',
+            //   style: theme.textTheme.titleLarge?.copyWith(
+            //     fontWeight: FontWeight.bold,
+            //   ),
+            // ),
+            // const SizedBox(height: 4),
+            Text(
+              'Our placed students sharing their journey',
+              style: TextStyle(
+                fontSize: 18,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Main content
+            Expanded(
+              child: !_isInitialized
+                  ? const Center(child: CircularProgressIndicator())
+                  : PageView.builder(
+                      controller: _pageController,
+                      itemCount: _stories.length,
+                      onPageChanged: (index) {
+                        setState(() => _currentIndex = index);
+                        _playVideoAt(
+                            index); // scroll pe jo card active, wahi play
+                      },
+                      itemBuilder: (context, index) {
+                        final story = _stories[index];
+                        final controller = _videoControllers[index]!;
+
+                        return Padding(
+                          padding:
+                              const EdgeInsets.only(right: 16, bottom: 8.0),
+                          child: _SuccessStoryCard(
+                            story: story,
+                            controller: controller,
+                          ),
+                        );
+                      },
+                    ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Page indicator (dots)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_stories.length, (i) {
+                final isActive = i == _currentIndex;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  height: 6,
+                  width: isActive ? 18 : 6,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: isActive
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface.withOpacity(0.2),
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// --------------------------------------------
+///  CARD: Single student + video
+/// --------------------------------------------
+class _SuccessStoryCard extends StatelessWidget {
+  final SuccessStory story;
+  final VideoPlayerController controller;
+
+  const _SuccessStoryCard({
+    required this.story,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Material(
+      elevation: 6,
+      borderRadius: BorderRadius.circular(24),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // VIDEO AREA
+          AspectRatio(
+            aspectRatio: controller.value.isInitialized
+                ? controller.value.aspectRatio
+                : 16 / 9,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: controller.value.isInitialized
+                      ? VideoPlayer(controller)
+                      : const Center(child: CircularProgressIndicator()),
+                ),
+
+                // Small play/pause chip
+                Positioned(
+                  bottom: 8,
+                  right: 8,
+                  child: _PlayPauseButton(controller: controller),
+                ),
+              ],
+            ),
+          ),
+
+          // TEXT AREA
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  story.name,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  story.course,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.business_center_outlined,
+                      size: 18,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        story.company,
+                        style: theme.textTheme.bodyMedium,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.currency_rupee,
+                      size: 18,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      story.package,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'CTC',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// --------------------------------------------
+///  PLAY / PAUSE BUTTON (stateful listener)
+/// --------------------------------------------
+class _PlayPauseButton extends StatefulWidget {
+  final VideoPlayerController controller;
+
+  const _PlayPauseButton({required this.controller});
+
+  @override
+  State<_PlayPauseButton> createState() => _PlayPauseButtonState();
+}
+
+class _PlayPauseButtonState extends State<_PlayPauseButton> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onControllerChanged);
+  }
+
+  void _onControllerChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onControllerChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isPlaying = widget.controller.value.isPlaying;
+
+    return GestureDetector(
+      onTap: () {
+        if (!widget.controller.value.isInitialized) return;
+
+        if (isPlaying) {
+          widget.controller.pause();
+        } else {
+          widget.controller.play();
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.45),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Icon(
+          isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+          color: Colors.white,
+          size: 22,
         ),
       ),
     );

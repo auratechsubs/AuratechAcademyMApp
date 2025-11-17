@@ -1562,6 +1562,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
               const SizedBox(height: 24),
               _otherPayments(isTablet),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                      "Pay with Google Pay • ₹${getTotalAmount()}",
+                    style: GoogleFonts.lato(
+                      fontSize: isTablet ? 18 : 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward, color: Colors.white),
+                ],
+              ),
+
               const SizedBox(height: 100), // to avoid bottom button overlap
             ],
           ),
@@ -1594,7 +1611,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             valueColor:
                                 AlwaysStoppedAnimation<Color>(Colors.white)),
                       )
-                    : Row(
+                    :
+                Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(

@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+
+import '../../Course_module/Model/Course_Master_Model.dart';
+import '../../Course_module/View/Single_course_detail_Screen.dart';
+import '../Controller/Segmentbase_Search_Controller.dart';
 
 class Segmentbasesearchpage extends StatefulWidget {
-  /// Optional: agar tum kisi specific segment se is screen ko open karna chaho
-  final String? initialSegment;
+  /// constructor se domain / segment name aayega
+  final String initialSegment;
 
-  const Segmentbasesearchpage({super.key, this.initialSegment});
+  const Segmentbasesearchpage({super.key, required this.initialSegment});
 
   @override
   State<Segmentbasesearchpage> createState() => _SegmentbasesearchpageState();
@@ -13,7 +19,11 @@ class Segmentbasesearchpage extends StatefulWidget {
 class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
   final TextEditingController _searchController = TextEditingController();
 
-  // Dummy segment list – baad me API / controller se aa sakti hai
+  final CourseSegmantMasterController _courseCtrl =
+      Get.find<CourseSegmantMasterController>();
+
+  // yaha tum chaaho to backend se bhi segment list la sakte ho,
+  // filhal tumhara hi static list rakhta hoon
   final List<String> _segments = const [
     'IT Diploma & Software Development',
     'Data & AI Technologies',
@@ -23,42 +33,23 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
 
   String? _selectedSegment;
 
-  // Dummy course list – yaha tum apna API data map kar sakte ho
-  final List<_CourseItem> _allCourses = const [
-    _CourseItem(
-      title: 'Core Python Programming',
-      segment: 'IT Diploma & Software Development',
-      level: 'Beginner • 2 Months',
-      learners: '1250+ learners',
-      tag: 'Most Popular',
-    ),
-    _CourseItem(
-      title: 'Advanced Python Programming',
-      segment: 'IT Diploma & Software Development',
-      level: 'Intermediate • 1 Month',
-      learners: '900+ learners',
-      tag: 'Advanced',
-    ),
-    _CourseItem(
-      title: 'Machine Learning using Python',
-      segment: 'Data & AI Technologies',
-      level: 'Intermediate • 2 Months',
-      learners: '185+ learners',
-      tag: 'In-demand',
-    ),
-    _CourseItem(
-      title: 'Network Security Fundamentals',
-      segment: 'Security & Networking',
-      level: 'Beginner • 1.5 Months',
-      learners: '300+ learners',
-      tag: 'Job-ready',
-    ),
-  ];
-
   @override
   void initState() {
     super.initState();
+
     _selectedSegment = widget.initialSegment ?? _segments.first;
+
+    // search ko controller se sync karna (optional but clean)
+    _courseCtrl.searchQuery.value = '';
+
+    // initial API call
+    if (_selectedSegment != null) {
+      _courseCtrl.fetchCoursesBySegment(_selectedSegment!);
+    }
+
+    _searchController.addListener(() {
+      _courseCtrl.searchQuery.value = _searchController.text;
+    });
   }
 
   @override
@@ -67,17 +58,38 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
     super.dispose();
   }
 
-  List<_CourseItem> get _filteredCourses {
-    final query = _searchController.text.trim().toLowerCase();
+  // Flutter side filtering _CourseItem ke form me (UI friendly model)
+  List<_CourseItem> _mapFromControllerCourses() {
+    final List<CourseMaster> source = _courseCtrl.filteredCourses;
 
-    return _allCourses.where((c) {
-      final matchSegment =
-          _selectedSegment == null || c.segment == _selectedSegment;
-      final matchSearch = query.isEmpty ||
-          c.title.toLowerCase().contains(query) ||
-          c.segment.toLowerCase().contains(query);
+    return source.map((c) {
+      final segmentName = c.courseCategory?.courseSegment?.name ??
+          c.courseCategory?.categoryName ??
+          'Unknown Segment';
 
-      return matchSegment && matchSearch;
+      final levelText =
+          '${c.courseLevel.isNotEmpty ? c.courseLevel : 'Course'} • ${c.courseDuration} ${c.courseDurationUnit}';
+
+      final learnersText =
+          c.numberOfStudents.isNotEmpty ? c.numberOfStudents : 'Learners';
+
+      // tag decide – thoda swag:
+      String tag = 'Trending';
+      if (c.topCourse == 1 || c.topCourse == 2) {
+        tag = 'Top Course';
+      } else if (double.tryParse(c.courseRating) != null &&
+          double.parse(c.courseRating) >= 4.5) {
+        tag = 'Top Rated';
+      }
+
+      return _CourseItem(
+        title: c.courseTitle,
+        segment: segmentName,
+        level: levelText,
+        learners: '$learnersText learners',
+        tag: tag,
+        imageUrl: '${c.courseImage}',
+      );
     }).toList();
   }
 
@@ -88,15 +100,13 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
       appBar: AppBar(
-        title: Text(
-          'Find Courses by Domain',
-        ),
+        title: const Text('Find Courses by Domain'),
       ),
       body: Column(
         children: [
           const SizedBox(height: 8),
 
-          // 🔍 Search + chip header
+          // 🔍 Search + description
           _buildSearchSection(isTablet),
 
           // 🧩 Segment filter chips
@@ -104,7 +114,7 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
 
           const SizedBox(height: 8),
 
-          // 📚 Course list
+          // 📚 Course list (from controller)
           Expanded(
             child: _buildCourseList(isTablet),
           ),
@@ -113,9 +123,7 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // SEARCH BAR + SMALL INFO
-  // ─────────────────────────────────────────────────────────────
+  // ───────────────── SEARCH BAR ─────────────────
   Widget _buildSearchSection(bool isTablet) {
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -162,7 +170,6 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    onChanged: (_) => setState(() {}),
                     decoration: const InputDecoration(
                       hintText: 'Search courses or segments…',
                       border: InputBorder.none,
@@ -175,7 +182,7 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
                     splashRadius: 18,
                     onPressed: () {
                       _searchController.clear();
-                      setState(() {});
+                      // listener already controller.searchQuery update kar dega
                     },
                   ),
               ],
@@ -186,10 +193,7 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // SEGMENT CHIPS
-  // ─────────────────────────────────────────────────────────────
-  Widget _buildSegmentChips(bool isTablet) {
+   Widget _buildSegmentChips(bool isTablet) {
     return SizedBox(
       height: isTablet ? 54 : 50,
       child: ListView.separated(
@@ -209,6 +213,8 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
               setState(() {
                 _selectedSegment = segment;
               });
+              // new segment ke liye fresh API call
+              _courseCtrl.fetchCoursesBySegment(segment);
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
@@ -251,92 +257,117 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // COURSE LIST
-  // ─────────────────────────────────────────────────────────────
-  Widget _buildCourseList(bool isTablet) {
-    final items = _filteredCourses;
+   Widget _buildCourseList(bool isTablet) {
+    return Obx(() {
+      if (_courseCtrl.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
 
-    if (items.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.search_off_rounded,
-                  size: isTablet ? 60 : 46, color: Colors.grey.shade400),
-              const SizedBox(height: 12),
-              Text(
-                'No courses found',
-                style: TextStyle(
-                  fontSize: isTablet ? 18 : 16,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF111827),
+      if (_courseCtrl.errorMessage.isNotEmpty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline_rounded,
+                    size: isTablet ? 56 : 46, color: Colors.redAccent),
+                const SizedBox(height: 12),
+                Text(
+                  'Something went wrong',
+                  style: TextStyle(
+                    fontSize: isTablet ? 18 : 16,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF111827),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Try changing the segment or search keyword.',
-                style: TextStyle(
-                  fontSize: isTablet ? 14 : 13,
-                  color: Colors.grey.shade600,
+                const SizedBox(height: 6),
+                Text(
+                  _courseCtrl.errorMessage.value,
+                  style: TextStyle(
+                    fontSize: isTablet ? 13.5 : 12.5,
+                    color: Colors.grey.shade700,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: const Text('Retry'),
+                  onPressed: () {
+                    final seg = _selectedSegment ?? _segments.first;
+                    _courseCtrl.fetchCoursesBySegment(seg);
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    }
-
-    return ListView.separated(
-      padding: EdgeInsets.symmetric(
-        horizontal: isTablet ? 18 : 14,
-        vertical: 10,
-      ),
-      itemCount: items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final course = items[index];
-        return _CourseCard(
-          course: course,
-          isTablet: isTablet,
-          onTap: () {
-            // TODO: yaha CourseDetailPage pe navigation karna
-            // Navigator.push(context, MaterialPageRoute(
-            //   builder: (_) => CourseDetailPage(course: course),
-            // ));
-          },
         );
-      },
-    );
+      }
+
+      final items = _mapFromControllerCourses();
+
+      if (items.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.search_off_rounded,
+                    size: isTablet ? 60 : 46, color: Colors.grey.shade400),
+                const SizedBox(height: 12),
+                Text(
+                  'No courses found',
+                  style: TextStyle(
+                    fontSize: isTablet ? 18 : 16,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Try changing the segment or search keyword.',
+                  style: TextStyle(
+                    fontSize: isTablet ? 14 : 13,
+                    color: Colors.grey.shade600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      return ListView.separated(
+        padding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 18 : 14,
+          vertical: 10,
+        ),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          final course = items[index];
+          return _CourseCard(
+            course: course,
+            isTablet: isTablet,
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => CourseDetailScreen(
+                            course: _courseCtrl.courses[index],
+                          )));
+            },
+          );
+        },
+      );
+    });
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// INTERNAL MODELS
-// ─────────────────────────────────────────────────────────────
 
-class _CourseItem {
-  final String title;
-  final String segment;
-  final String level;
-  final String learners;
-  final String tag;
-
-  const _CourseItem({
-    required this.title,
-    required this.segment,
-    required this.level,
-    required this.learners,
-    required this.tag,
-  });
-}
-
-// ─────────────────────────────────────────────────────────────
-// COURSE CARD UI
-// ─────────────────────────────────────────────────────────────
 
 class _CourseCard extends StatelessWidget {
   final _CourseItem course;
@@ -394,10 +425,17 @@ class _CourseCard extends StatelessWidget {
                     colors: [Color(0xFF2563EB), Color(0xFF4F46E5)],
                   ),
                 ),
-                child: const Icon(
-                  Icons.school_rounded,
-                  color: Colors.white,
-                  size: 28,
+
+                child: ClipOval(
+                  child: Image.network(
+                    "https://api.auratechacademy.com${course.imageUrl}",
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.school_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -495,4 +533,21 @@ class _CourseCard extends StatelessWidget {
       ),
     );
   }
+}
+class _CourseItem {
+  final String title;
+  final String segment;
+  final String level;
+  final String learners;
+  final String tag;
+  final String imageUrl;
+
+  const _CourseItem({
+    required this.title,
+    required this.segment,
+    required this.level,
+    required this.learners,
+    required this.tag,
+    required this.imageUrl,
+  });
 }

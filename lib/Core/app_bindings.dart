@@ -7,6 +7,7 @@ import '../modules/Authentication_module/Controller/Simple_Signup_Controller.dar
 import '../modules/Homescreen_module/Controller/Coursesegment_Controller.dart';
 import '../modules/Homescreen_module/Controller/Flash_deal_controller.dart';
 import '../modules/Homescreen_module/Controller/HomeScreen_Controller.dart';
+import '../modules/Homescreen_module/Controller/Segmentbase_Search_Controller.dart';
 import '../modules/Homescreen_module/Controller/SuccessStoryController.dart';
 import '../modules/Homescreen_module/Controller/Testimonial_controller.dart';
 import '../modules/Homescreen_module/Controller/GalleyMaterController.dart';
@@ -52,6 +53,7 @@ class AppBindings extends Bindings {
     Get.lazyPut<FlashBannerController>(() => FlashBannerController(), fenix: true);
     Get.lazyPut<SuccessStoryController>(() => SuccessStoryController(), fenix: true);
     Get.lazyPut<WebinarController>(() => WebinarController(), fenix: true);
+    Get.lazyPut<CourseSegmantMasterController>(() => CourseSegmantMasterController(), fenix: true);
 
     // Category & Courses
     Get.lazyPut<Category_Controller>(() => Category_Controller(), fenix: true);
