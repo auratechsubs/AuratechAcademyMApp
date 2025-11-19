@@ -1346,9 +1346,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       firstName: firstName.text.trim(),
       lastName: lastName.text.trim(),
       countryName: country.text.trim(),
-      companyName: companyName.text.trim(),
+      companyName: " ",
       streetAddress: streetAddress.text.trim(),
-      apartmentNo: apartment.text.trim(),
+      apartmentNo: " ",
       cityName: city.text.trim(),
       postCode: postcode.text.trim(),
       emailAddress: email.text.trim(),
@@ -1492,26 +1492,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 hint: "Enter your last name",
                 isTablet: isTablet,
               ),
-              _buildTextField(
-                controller: companyName,
-                label: "Company Name",
-                hint: "Enter your company name",
-                isRequired: false,
-                isTablet: isTablet,
-              ),
+              // _buildTextField(
+              //   controller: companyName,
+              //   label: "Company Name",
+              //   hint: "Enter your company name",
+              //   isRequired: false,
+              //   isTablet: isTablet,
+              // ),
               _buildTextField(
                 controller: streetAddress,
                 label: "Street Address",
                 hint: "123 Main Street",
                 isTablet: isTablet,
               ),
-              _buildTextField(
-                controller: apartment,
-                label: "Apartment No.",
-                hint: "Apt 3B",
-                isRequired: false,
-                isTablet: isTablet,
-              ),
+              // _buildTextField(
+              //   controller: apartment,
+              //   label: "Apartment No.",
+              //   hint: "Apt 3B",
+              //   isRequired: false,
+              //   isTablet: isTablet,
+              // ),
               _buildTextField(
                 controller: city,
                 label: "City",
@@ -1563,23 +1563,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               const SizedBox(height: 24),
               _otherPayments(isTablet),
               const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                      "Pay with Google Pay • ₹${getTotalAmount()}",
-                    style: GoogleFonts.lato(
-                      fontSize: isTablet ? 18 : 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward, color: Colors.white),
-                ],
-              ),
-
-              const SizedBox(height: 100), // to avoid bottom button overlap
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     Text(
+              //         "Pay with Google Pay • ₹${getTotalAmount()}",
+              //       style: GoogleFonts.lato(
+              //         fontSize: isTablet ? 18 : 16,
+              //         color: Colors.white,
+              //         fontWeight: FontWeight.bold,
+              //       ),
+              //     ),
+              //     const SizedBox(width: 8),
+              //     const Icon(Icons.arrow_forward, color: Colors.white),
+              //   ],
+              // ),
+              // const SizedBox(height: 100), // to avoid bottom button overlap
             ],
           ),
         ),

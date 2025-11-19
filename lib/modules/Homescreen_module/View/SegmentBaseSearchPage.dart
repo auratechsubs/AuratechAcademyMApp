@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
 import '../../Course_module/Model/Course_Master_Model.dart';
 import '../../Course_module/View/Single_course_detail_Screen.dart';
@@ -88,7 +87,7 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
         level: levelText,
         learners: '$learnersText learners',
         tag: tag,
-        imageUrl: '${c.courseImage}',
+        imageUrl: c.courseImage,
       );
     }).toList();
   }

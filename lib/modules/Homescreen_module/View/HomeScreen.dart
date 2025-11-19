@@ -446,6 +446,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: ElevatedButton(
                                         onPressed: () {
                                           /// On Tap Action (payment / enroll)
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    PopularCoursesScreen(
+                                                  courses:
+                                                      popularCourse_controller
+                                                          .courseList,
+                                                ),
+                                              ));
                                         },
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: AppColors.primary,
@@ -3628,7 +3638,7 @@ class _SuccessStoriesSectionState extends State<SuccessStoriesSection> {
     });
 
     // First time: first video autoplay
-    _playVideoAt(0);
+    // _playVideoAt(0);
   }
 
   void _playVideoAt(int index) {

@@ -12,8 +12,9 @@ import '../../../constant/constant_colors.dart';
 import '../Model/Course_Master_Model.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:intl/intl.dart';
- import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
+
 class CourseDetailPage extends StatefulWidget {
   final CourseMaster course;
   const CourseDetailPage({super.key, required this.course});
@@ -27,14 +28,100 @@ class _CourseDetailPageState extends State<CourseDetailPage>
   late final TabController _tabController;
   late final List<_LessonItem> _lessons;
   final int _currentIndex = 0;
+  late List<CourseModule> _modules;
 
   VideoPlayerController? _videoController;
   ChewieController? _chewieController;
+
+  final notesModules = [
+    NotesModule(
+      title: 'Module 1: Introduction of Machine Learning',
+      notes: const [
+        PdfItem(
+          title: 'Chapter 1: Chapter1Notes.pdf',
+          url:
+              'https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf',
+        ),
+        PdfItem(
+          title: 'Chapter 2: Chapter2Notes.pdf',
+          url:
+              'https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf',
+        ),
+        PdfItem(
+          title: 'Chapter 3: Chapter3Notes.pdf',
+          url:
+              'https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf',
+        ),
+        PdfItem(
+          title: 'Chapter 4: Chapter4Notes.pdf',
+          url:
+              'https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf',
+        ),
+      ],
+    ),
+    NotesModule(
+      title: 'Module 2: Supervised Learning Basics',
+      notes: const [
+        PdfItem(
+          title: 'Chapter 1: RegressionNotes.pdf',
+          url:
+              'https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf',
+        ),
+        PdfItem(
+          title: 'Chapter 2: ClassificationNotes.pdf',
+          url:
+              'https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf',
+        ),
+      ],
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    // 🔹 yaha pe _modules ko set karo (local final nahi)
+    _modules = [
+      CourseModule(
+        title: 'Module 1: Introduction to Machine Learning',
+        lessons: [
+          LessonData(
+            title: 'Chapter 1: What is Machine Learning?',
+            url:
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+            duration: '08:32',
+            isFree: true,
+          ),
+          LessonData(
+            title: 'Chapter 2: Types of ML',
+            url:
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            duration: '12:10',
+          ),
+          LessonData(
+            title: 'Chapter 3: Real Life Use Cases',
+            url:
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+            duration: '09:45',
+          ),
+        ],
+      ),
+      CourseModule(
+        title: 'Module 2: Supervised Learning Basics',
+        lessons: [
+          LessonData(
+            title: 'Chapter 1: Regression',
+            url:
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            duration: '11:02',
+          ),
+          // ...
+        ],
+      ),
+    ];
+
+    // 🔹 ye tumhara existing flat list hai (agar kahin aur UI me use kar rahe ho)
     _lessons = [
       _LessonItem(
         title: 'Introduction to AI & Course Overview',
@@ -58,6 +145,7 @@ class _CourseDetailPageState extends State<CourseDetailPage>
         isFree: false,
       ),
     ];
+
     _initializePlayer(_lessons[_currentIndex].url);
   }
 
@@ -139,8 +227,8 @@ class _CourseDetailPageState extends State<CourseDetailPage>
             child: Column(
               children: [
                 const SizedBox(height: 12),
-                _TopMetaCard(course: c),
-                const SizedBox(height: 12),
+                // _TopMetaCard(course: c),
+                // const SizedBox(height: 12),
                 _TabsHeader(tabController: _tabController),
                 _TabViews(tabController: _tabController, course: c),
                 const SizedBox(height: 20),
@@ -150,15 +238,8 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                     context,
                     MaterialPageRoute(
                       builder: (_) => LearningVideosPage(
-                        title: c.courseTitle,
-                        lessons: _lessons
-                            .map((e) => LessonData(
-                                  title: e.title,
-                                  url: e.url,
-                                  duration: e.durationLabel,
-                                  isFree: e.isFree,
-                                ))
-                            .toList(),
+                        title: 'Machine Learning Crash Course',
+                        modules: _modules,
                       ),
                     ),
                   ),
@@ -166,19 +247,8 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                     context,
                     MaterialPageRoute(
                       builder: (_) => LearningMaterialsPage(
-                        title: c.courseTitle,
-                        materials: [
-                          PdfItem(
-                            title: 'AI Lecture Notes - Module 1',
-                            url:
-                                'https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf',
-                          ),
-                          PdfItem(
-                            title: 'NumPy & Pandas Quick Reference',
-                            url:
-                                'https://unec.edu.az/application/uploads/2014/12/pdf-sample.pdf',
-                          ),
-                        ],
+                        title: 'Machine Learning Crash Course',
+                        modules: notesModules,
                       ),
                     ),
                   ),
@@ -189,22 +259,12 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                   ),
                   onOpenCertificate: () => Navigator.push(
                     context,
-                    // MaterialPageRoute(
-                    //   builder: (_) => CertificatePage(
-                    //     title: c.courseTitle,
-                    //     previewImage: 'https://i.imgur.com/9KQxR9v.png',
-                    //     downloadUrl:
-                    //         'https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf',
-                    //     priceText: '₹349 (Inc. GST)',
-                    //   ),
-                    // ),
                     MaterialPageRoute(
                       builder: (_) => CertificatePage(
                         courseTitle: 'Flutter App Development',
                         userName: 'Saru Khan',
                         completedOn: DateTime.now(),
                         priceText: '₹349 (Inc. GST)',
-
                       ),
                     ),
                   ),
@@ -822,7 +882,7 @@ class _InfoPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: AppColors.surface,
+      color: AppColors.background,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -850,7 +910,6 @@ class _InfoPlaceholder extends StatelessWidget {
     );
   }
 }
-
 
 class _KVChip extends StatelessWidget {
   final String k;
@@ -1034,26 +1093,310 @@ class _HtmlText {
   }
 }
 
-class LearningVideosPage extends StatefulWidget {
-  final String title;
-  final List<LessonData> lessons;
-  const LearningVideosPage(
-      {super.key, required this.title, required this.lessons});
-
-  @override
-  State<LearningVideosPage> createState() => _LearningVideosPageState();
-}
-
 class LessonData {
   final String title;
   final String url;
   final String duration;
   final bool isFree;
-  LessonData(
-      {required this.title,
-      required this.url,
-      required this.duration,
-      this.isFree = false});
+
+  LessonData({
+    required this.title,
+    required this.url,
+    required this.duration,
+    this.isFree = true,
+  });
+}
+
+class CourseModule {
+  final String title; // e.g. "Module 1: Introduction to Machine Learning"
+  final List<LessonData> lessons;
+
+  CourseModule({
+    required this.title,
+    required this.lessons,
+  });
+}
+
+class LearningVideosPage extends StatefulWidget {
+  final String title;
+  final List<CourseModule> modules;
+
+  const LearningVideosPage({
+    super.key,
+    required this.title,
+    required this.modules,
+  });
+
+  @override
+  State<LearningVideosPage> createState() => _LearningVideosPageState();
+}
+
+class _LearningVideosPageState extends State<LearningVideosPage> {
+  VideoPlayerController? _vc;
+  ChewieController? _cc;
+
+  int _currentModuleIndex = 0;
+  int _currentLessonIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Default: Module 0, Lesson 0 agar available ho
+    if (widget.modules.isNotEmpty && widget.modules[0].lessons.isNotEmpty) {
+      _load(0, 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposeControllers();
+    super.dispose();
+  }
+
+  Future<void> _disposeControllers() async {
+    try {
+      await _cc?.pause();
+    } catch (_) {}
+    _cc?.dispose();
+    await _vc?.dispose();
+  }
+
+  Future<void> _load(int moduleIndex, int lessonIndex) async {
+    final lesson = widget.modules[moduleIndex].lessons[lessonIndex];
+
+    await _disposeControllers();
+
+    _vc = VideoPlayerController.networkUrl(Uri.parse(lesson.url));
+    await _vc!.initialize();
+
+    _cc = ChewieController(
+      videoPlayerController: _vc!,
+      autoPlay: false,
+      showControls: true,
+    );
+
+    setState(() {
+      _currentModuleIndex = moduleIndex;
+      _currentLessonIndex = lessonIndex;
+    });
+  }
+
+  Future<void> _downloadFile(String url, String name) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/$name');
+
+      final client = http.Client();
+      final req = await client.send(http.Request('GET', Uri.parse(url)));
+      final total = req.contentLength ?? 0;
+      var downloaded = 0;
+
+      final sink = file.openWrite();
+
+      await for (final chunk in req.stream) {
+        downloaded += chunk.length;
+        sink.add(chunk);
+
+        if (!mounted) continue;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Downloading ${((downloaded / total) * 100).toStringAsFixed(0)}%',
+            ),
+            duration: const Duration(milliseconds: 300),
+          ),
+        );
+      }
+
+      await sink.close();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Download complete! Opening...')),
+      );
+
+      final result = await OpenFilex.open(file.path);
+      if (result.type != ResultType.done) {
+        await launchUrl(Uri.file(file.path));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Download failed: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final modules = widget.modules;
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        title: Text(widget.title),
+      ),
+      body: Column(
+        children: [
+          // === TOP VIDEO PLAYER ===
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Card(
+              margin: const EdgeInsets.all(12),
+              color: Colors.black,
+              clipBehavior: Clip.hardEdge,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: _cc != null && _vc != null && _vc!.value.isInitialized
+                  ? Chewie(controller: _cc!)
+                  : const Center(child: CircularProgressIndicator()),
+            ),
+          ),
+
+          // === MODULE + CHAPTER LIST (COLLAPSIBLE) ===
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: ListView.builder(
+                itemCount: modules.length,
+                itemBuilder: (context, moduleIndex) {
+                  final module = modules[moduleIndex];
+
+                  return Card(
+                    elevation: 0,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: const BorderSide(color: AppColors.border),
+                    ),
+                    child: Theme(
+                      // ExpansionTile border color fix
+                      data: Theme.of(context).copyWith(
+                        dividerColor: Colors.transparent,
+                      ),
+                      child: ExpansionTile(
+                        tilePadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        title: Text(
+                          module.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                        leading: CircleAvatar(
+                          backgroundColor: AppColors.background,
+                          child: Text(
+                            '${moduleIndex + 1}',
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        children: List.generate(
+                          module.lessons.length,
+                          (lessonIndex) {
+                            final lesson = module.lessons[lessonIndex];
+
+                            final bool isActive =
+                                moduleIndex == _currentModuleIndex &&
+                                    lessonIndex == _currentLessonIndex;
+
+                            return Column(
+                              children: [
+                                ListTile(
+                                  onTap: () => _load(
+                                      moduleIndex, lessonIndex), // play video
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 4,
+                                  ),
+                                  leading: CircleAvatar(
+                                    backgroundColor: isActive
+                                        ? AppColors.primary.withOpacity(.1)
+                                        : AppColors.background,
+                                    child: isActive
+                                        ? const Icon(
+                                            Icons.play_arrow_rounded,
+                                            color: AppColors.primary,
+                                          )
+                                        : Text(
+                                            '${lessonIndex + 1}',
+                                            style: const TextStyle(
+                                              color: AppColors.textPrimary,
+                                            ),
+                                          ),
+                                  ),
+                                  title: Text(
+                                    lesson.title,
+                                    style: TextStyle(
+                                      fontWeight: isActive
+                                          ? FontWeight.w600
+                                          : FontWeight.w400,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    lesson.duration,
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (lesson.isFree)
+                                        const Icon(
+                                          Icons.visibility_rounded,
+                                          color: AppColors.primary,
+                                          size: 20,
+                                        )
+                                      else
+                                        const Icon(
+                                          Icons.lock_outline_rounded,
+                                          color: AppColors.textSecondary,
+                                          size: 20,
+                                        ),
+                                      // Agar download chahiye to ye uncomment karna:
+                                      // IconButton(
+                                      //   icon: const Icon(
+                                      //     Icons.download_rounded,
+                                      //     color: AppColors.primary,
+                                      //   ),
+                                      //   onPressed: () => _downloadFile(
+                                      //     lesson.url,
+                                      //     '${lesson.title}.mp4',
+                                      //   ),
+                                      // ),
+                                    ],
+                                  ),
+                                ),
+                                if (lessonIndex != module.lessons.length - 1)
+                                  const Divider(
+                                    height: 1,
+                                    color: AppColors.border,
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _LessonItem {
@@ -1069,165 +1412,68 @@ class _LessonItem {
   });
 }
 
-class _LearningVideosPageState extends State<LearningVideosPage> {
-  VideoPlayerController? _vc;
-  ChewieController? _cc;
-  int _index = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _load(0);
-  }
-
-  Future<void> _load(int i) async {
-    await _dispose();
-    _vc = VideoPlayerController.networkUrl(Uri.parse(widget.lessons[i].url));
-    await _vc!.initialize();
-    _cc = ChewieController(
-      videoPlayerController: _vc!,
-      autoPlay: false,
-      showControls: true,
-    );
-    setState(() => _index = i);
-  }
-
-  Future<void> _dispose() async {
-    await _cc?.pause();
-    _cc?.dispose();
-    await _vc?.dispose();
-  }
-
-  Future<void> _downloadFile(String url, String name) async {
-    try {
-      final dir = await getApplicationDocumentsDirectory();
-      final file = File('${dir.path}/$name');
-      final req = await http.Client().send(http.Request('GET', Uri.parse(url)));
-      final total = req.contentLength ?? 0;
-      var downloaded = 0;
-      final sink = file.openWrite();
-      await for (final chunk in req.stream) {
-        downloaded += chunk.length;
-        sink.add(chunk);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              'Downloading ${((downloaded / total) * 100).toStringAsFixed(0)}%'),
-          duration: const Duration(milliseconds: 300),
-        ));
-      }
-      await sink.close();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Download complete! Opening...')),
-      );
-      final result =
-          await OpenFilex.open(file.path); // replaces OpenFile.open(path)
-      if (result.type != ResultType.done) {
-        // fallback if no handler found
-        await launchUrl(Uri.file(file.path));
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Download failed: $e')));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = widget.lessons;
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        title: Text(widget.title),
-      ),
-      body: ListView(
-        children: [
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: Card(
-              margin: const EdgeInsets.all(12),
-              color: Colors.black,
-              clipBehavior: Clip.hardEdge,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: _cc != null && _vc!.value.isInitialized
-                  ? Chewie(controller: _cc!)
-                  : const Center(child: CircularProgressIndicator()),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Card(
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(color: AppColors.border)),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: l.length,
-                separatorBuilder: (_, __) =>
-                    const Divider(height: 1, color: AppColors.border),
-                itemBuilder: (_, i) => ListTile(
-                  onTap: () => _load(i),
-                  leading: CircleAvatar(
-                    backgroundColor: AppColors.background,
-                    child: i == _index
-                        ? const Icon(Icons.play_arrow, color: AppColors.primary)
-                        : Text('${i + 1}',
-                            style:
-                                const TextStyle(color: AppColors.textPrimary)),
-                  ),
-                  title: Text(l[i].title),
-                  subtitle: Text(l[i].duration),
-                  trailing: Icon(Icons.visibility_rounded,
-                      color: l[i].isFree
-                          ? AppColors.primary
-                          : AppColors.textSecondary),
-                  // trailing: IconButton(
-                  //   icon: const Icon(Icons.download_rounded,
-                  //       color: AppColors.primary),
-                  //   onPressed: () =>
-                  //       _downloadFile(l[i].url, '${l[i].title}.mp4'),
-                  // ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// =================================================================
 /// LEARNING MATERIALS PAGE WITH PDF VIEW & DOWNLOAD
 /// =================================================================
+
+
+class PdfItem {
+  final String title;
+  final String url;
+
+  const PdfItem({
+    required this.title,
+    required this.url,
+  });
+}
+
+class NotesModule {
+  final String title;
+  final List<PdfItem> notes;
+
+  const NotesModule({
+    required this.title,
+    required this.notes,
+  });
+}
+
 class LearningMaterialsPage extends StatelessWidget {
   final String title;
-  final List<PdfItem> materials;
-  const LearningMaterialsPage(
-      {super.key, required this.title, required this.materials});
+  final List<NotesModule> modules;
+
+  const LearningMaterialsPage({
+    super.key,
+    required this.title,
+    required this.modules,
+  });
 
   Future<void> _downloadFile(
-      BuildContext context, String url, String name) async {
+    BuildContext context,
+    String url,
+    String name,
+  ) async {
     try {
       final dir = await getApplicationDocumentsDirectory();
       final file = File('${dir.path}/$name');
+
       final res = await http.get(Uri.parse(url));
       await file.writeAsBytes(res.bodyBytes);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('PDF downloaded!')));
-      // OpenFile.open(file.path);
-      final result =
-          await OpenFilex.open(file.path); // replaces OpenFile.open(path)
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('PDF downloaded!')),
+      );
+
+      final result = await OpenFilex.open(file.path);
       if (result.type != ResultType.done) {
-        // fallback if no handler found
         await launchUrl(Uri.file(file.path));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
   }
 
@@ -1241,34 +1487,100 @@ class LearningMaterialsPage extends StatelessWidget {
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(12),
-        itemCount: materials.length,
-        itemBuilder: (_, i) {
-          final m = materials[i];
+        itemCount: modules.length,
+        itemBuilder: (_, moduleIndex) {
+          final module = modules[moduleIndex];
+
           return Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
               side: const BorderSide(color: AppColors.border),
             ),
-            margin: const EdgeInsets.only(bottom: 10),
-            child: ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: AppColors.background,
-                child: Icon(Icons.picture_as_pdf, color: AppColors.primary),
+            margin: const EdgeInsets.only(bottom: 12),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                dividerColor: Colors.transparent,
               ),
-              title: Text(m.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('Tap to view or download'),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PdfWebViewPage(title: m.title, url: m.url),
+              child: ExpansionTile(
+                tilePadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                title: Text(
+                  module.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
+                leading: CircleAvatar(
+                  backgroundColor: AppColors.background,
+                  child: Text(
+                    // Module numbering: 1, 2, 3...
+                    '${moduleIndex + 1}',
+                    style: const TextStyle(color: AppColors.textPrimary),
+                  ),
+                ),
+                children: List.generate(module.notes.length, (chapterIndex) {
+                  final note = module.notes[chapterIndex];
+
+                  // A, B, C, D…
+                  final chapterLetter =
+                      String.fromCharCode(65 + chapterIndex); // 65 = 'A'
+
+                  return Column(
+                    children: [
+                      ListTile(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PdfWebViewPage(
+                                title: note.title, url: note.url),
+                          ),
+                        ),
+                        leading: const CircleAvatar(
+                          backgroundColor: AppColors.background,
+                          child: Icon(
+                            Icons.picture_as_pdf,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        title: Text(
+                          // Example:
+                          // "A. Chapter 1: Chapter1Notes.pdf"
+                          '$chapterLetter. ${note.title}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
+                        subtitle: const Text(
+                          'Tap to view or download',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        // trailing: IconButton(
+                        //   icon: const Icon(
+                        //     Icons.download_rounded,
+                        //     color: AppColors.primary,
+                        //   ),
+                        //   onPressed: () => _downloadFile(
+                        //     context,
+                        //     note.url,
+                        //     '${note.title}.pdf',
+                        //   ),
+                        // ),
+                      ),
+                      if (chapterIndex != module.notes.length - 1)
+                        const Divider(
+                          height: 1,
+                          color: AppColors.border,
+                        ),
+                    ],
+                  );
+                }),
               ),
-              // trailing: IconButton(
-              //   icon: const Icon(Icons.download, color: AppColors.primary),
-              //   onPressed: () =>
-              //       _downloadFile(context, m.url, '${m.title}.pdf'),
-              // ),
             ),
           );
         },
@@ -1277,20 +1589,15 @@ class LearningMaterialsPage extends StatelessWidget {
   }
 }
 
-class PdfItem {
-  final String title;
-  final String url;
-  const PdfItem({required this.title, required this.url});
-}
-
-/// =================================================================
-/// PDF VIEWER PAGE
-/// =================================================================
-///
 class PdfWebViewPage extends StatefulWidget {
   final String title;
   final String url;
-  const PdfWebViewPage({super.key, required this.title, required this.url});
+
+  const PdfWebViewPage({
+    super.key,
+    required this.title,
+    required this.url,
+  });
 
   @override
   State<PdfWebViewPage> createState() => _PdfWebViewPageState();
@@ -1303,15 +1610,27 @@ class _PdfWebViewPageState extends State<PdfWebViewPage> {
   @override
   void initState() {
     super.initState();
+
     final viewUrl = Uri.encodeFull(
-        'https://docs.google.com/gview?embedded=1&url=${widget.url}');
+      'https://docs.google.com/gview?embedded=1&url=${widget.url}',
+    );
+
+    print("Geting  PDF URL: ${widget.url}");
+    print("Viewing PDF URL: $viewUrl");
     final params = const PlatformWebViewControllerCreationParams();
     final controller = WebViewController.fromPlatformCreationParams(params)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(NavigationDelegate(
-        onPageFinished: (_) => setState(() => _loading = false),
-      ))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) {
+            if (mounted) {
+              setState(() => _loading = false);
+            }
+          },
+        ),
+      )
       ..loadRequest(Uri.parse(viewUrl));
+
     _controller = controller;
   }
 
@@ -1323,20 +1642,29 @@ class _PdfWebViewPageState extends State<PdfWebViewPage> {
         foregroundColor: Colors.white,
         title: Text(widget.title),
       ),
-      body: Stack(children: [
-        WebViewWidget(controller: _controller),
-        if (_loading)
-          const LinearProgressIndicator(minHeight: 2, color: AppColors.primary),
-      ]),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (_loading)
+            const LinearProgressIndicator(
+              minHeight: 2,
+              color: AppColors.primary,
+            ),
+        ],
+      ),
     );
   }
 }
 
+
+
 /// =================================================================
 /// QUIZ PAGE (Interactive)
 /// =================================================================
+
 class QuizPage extends StatefulWidget {
   final String title;
+
   const QuizPage({super.key, required this.title});
 
   @override
@@ -1344,11 +1672,12 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
-  final _questions = const [
+  // 🔹 20 Questions – simple static list (baad me API se bhi la sakte ho)
+  final List<Map<String, dynamic>> _questions = const [
     {
       'q': 'Which library is used for numerical computing in Python?',
       'a': ['TensorFlow', 'NumPy', 'React', 'NodeJS'],
-      'correct': 1
+      'correct': 1,
     },
     {
       'q': 'What is supervised learning?',
@@ -1356,18 +1685,253 @@ class _QuizPageState extends State<QuizPage> {
         'Learning without data',
         'Learning with labeled data',
         'Learning from mistakes only',
-        'Learning random behavior'
+        'Learning random behavior',
       ],
-      'correct': 1
+      'correct': 1,
+    },
+    {
+      'q': 'Which of these is a programming language?',
+      'a': ['HTML', 'CSS', 'Python', 'Figma'],
+      'correct': 2,
+    },
+    {
+      'q': 'Which type of ML algorithm groups similar data points together?',
+      'a': ['Classification', 'Clustering', 'Regression', 'Reinforcement'],
+      'correct': 1,
+    },
+    {
+      'q': 'In Python, how do you start a function definition?',
+      'a': [
+        'func myFunc():',
+        'def myFunc():',
+        'function myFunc()',
+        'fn myFunc():'
+      ],
+      'correct': 1,
+    },
+    {
+      'q': 'Which library is commonly used for data visualization in Python?',
+      'a': ['Pandas', 'NumPy', 'Matplotlib', 'Scikit-learn'],
+      'correct': 2,
+    },
+    {
+      'q': 'Which of the following is a supervised learning task?',
+      'a': [
+        'Customer segmentation',
+        'Spam email detection',
+        'Anomaly detection',
+        'Dimensionality reduction'
+      ],
+      'correct': 1,
+    },
+    {
+      'q': 'What does "ML" stand for?',
+      'a': [
+        'Main Logic',
+        'Machine Learning',
+        'Model Language',
+        'Modern Learning'
+      ],
+      'correct': 1,
+    },
+    {
+      'q': 'Which data type is used to store True/False values in Python?',
+      'a': ['int', 'bool', 'str', 'float'],
+      'correct': 1,
+    },
+    {
+      'q': 'Which of these is an example of regression?',
+      'a': [
+        'Predicting email is spam or not',
+        'Predicting tomorrow’s temperature',
+        'Clustering users by interests',
+        'Finding outliers in a dataset',
+      ],
+      'correct': 1,
+    },
+    {
+      'q': 'Which library is primarily used for deep learning?',
+      'a': ['Pandas', 'TensorFlow', 'Seaborn', 'Matplotlib'],
+      'correct': 1,
+    },
+    {
+      'q': 'What is overfitting in ML?',
+      'a': [
+        'Model learns only from test data',
+        'Model performs too well on training data but poorly on new data',
+        'Model is too simple',
+        'Model has no parameters',
+      ],
+      'correct': 1,
+    },
+    {
+      'q': 'Which of these is a valid Python list?',
+      'a': [
+        '{1, 2, 3}',
+        '(1, 2, 3)',
+        '[1, 2, 3]',
+        '<1, 2, 3>',
+      ],
+      'correct': 2,
+    },
+    {
+      'q': 'Which of the following is NOT a machine learning task?',
+      'a': ['Classification', 'Clustering', 'Compilation', 'Regression'],
+      'correct': 2,
+    },
+    {
+      'q': 'What does "epoch" mean in training a neural network?',
+      'a': [
+        'Number of layers in the model',
+        'One full pass over the entire training dataset',
+        'Number of neurons',
+        'Size of the batch',
+      ],
+      'correct': 1,
+    },
+    {
+      'q': 'Which of the following Python libraries is used for data analysis?',
+      'a': ['Pandas', 'OpenCV', 'Django', 'Flask'],
+      'correct': 0,
+    },
+    {
+      'q': 'What is the main goal of classification?',
+      'a': [
+        'Predict a continuous value',
+        'Group similar items',
+        'Assign input to one of the predefined categories',
+        'Reduce dimensions',
+      ],
+      'correct': 2,
+    },
+    {
+      'q': 'In Python, which symbol is used for comments?',
+      'a': ['//', '#', '/* */', '<!-- -->'],
+      'correct': 1,
+    },
+    {
+      'q': 'Which metric is commonly used for classification problems?',
+      'a': ['Mean Squared Error', 'Accuracy', 'R-squared', 'RMSE'],
+      'correct': 1,
+    },
+    {
+      'q': 'Which of these is a popular Jupyter alternative for notebooks?',
+      'a': ['VS Code', 'Google Colab', 'PyCharm', 'Slack'],
+      'correct': 1,
     },
   ];
 
-  int _index = 0;
+  int _currentIndex = 0;
   int _score = 0;
+  int? _selectedIndex; // konsa option select hai
+
+  void _onNext() {
+    final currentQ = _questions[_currentIndex];
+
+    if (_selectedIndex == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Please select an answer before continuing.')),
+      );
+      return;
+    }
+
+    final correctIndex = currentQ['correct'] as int;
+    if (_selectedIndex == correctIndex) {
+      _score++;
+    }
+
+    if (_currentIndex < _questions.length - 1) {
+      setState(() {
+        _currentIndex++;
+        _selectedIndex = null;
+      });
+    } else {
+      _showResultDialog();
+    }
+  }
+
+  void _showResultDialog() {
+    final total = _questions.length;
+    final percent = (_score / total * 100).toStringAsFixed(1);
+
+    String message;
+    if (_score == total) {
+      message = 'Full power! 🔥 Perfect score!';
+    } else if (_score >= (0.7 * total)) {
+      message = 'Solid work! You\'re getting strong in the basics. 💪';
+    } else if (_score >= (0.5 * total)) {
+      message = 'Not bad! Thoda aur practice and you\'ll be pro. 🚀';
+    } else {
+      message = 'Chill, sab hota hai. Revise once more & attempt again. 💡';
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Quiz Completed!'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Your Score: $_score / $total',
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Percentage: $percent%',
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: const TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _resetQuiz();
+            },
+            child: const Text('Retry Quiz'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _resetQuiz() {
+    setState(() {
+      _currentIndex = 0;
+      _score = 0;
+      _selectedIndex = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final q = _questions[_index];
+    final q = _questions[_currentIndex];
+    final options = q['a'] as List<String>;
+    final total = _questions.length;
+    final current = _currentIndex + 1;
+
+    final progress = current / total;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
@@ -1378,43 +1942,132 @@ class _QuizPageState extends State<QuizPage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text(q['q'] as String,
-                style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary)),
-            const SizedBox(height: 16),
-            ...(q['a'] as List<String>).asMap().entries.map((e) {
-              final i = e.key;
-              final text = e.value;
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                child: ListTile(
-                  title: Text(text),
-                  onTap: () {
-                    final correct = q['correct'] == i;
-                    if (correct) _score++;
-                    if (_index < _questions.length - 1) {
-                      setState(() => _index++);
-                    } else {
-                      showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: const Text('Quiz Completed!'),
-                          content: Text(
-                              'Your Score: $_score / ${_questions.length}'),
-                          actions: [
-                            TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('OK'))
-                          ],
-                        ),
-                      );
-                    }
-                  },
+            // 🔹 Top: Question counter + progress bar
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Question $current of $total',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              );
-            }),
+                Text(
+                  '${(progress * 100).toStringAsFixed(0)}%',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 8,
+                backgroundColor: AppColors.border,
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // 🔹 Question Card
+            Card(
+              elevation: 0,
+              color: AppColors.background,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: AppColors.border),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  q['q'] as String,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // 🔹 Options list with radio circles
+            Expanded(
+              child: ListView.separated(
+                itemCount: options.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final optionText = options[index];
+
+                  return Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: _selectedIndex == index
+                            ? AppColors.primary
+                            : AppColors.border,
+                      ),
+                    ),
+                    child: RadioListTile<int>(
+                      value: index,
+                      groupValue: _selectedIndex,
+                      activeColor: AppColors.primary,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      title: Text(
+                        optionText,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: _selectedIndex == index
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
+                      ),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedIndex = val;
+                        });
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // 🔹 Bottom Next / Submit button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _onNext,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                child: Text(
+                  _currentIndex == total - 1 ? 'Submit Quiz' : 'Next',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -1422,101 +2075,11 @@ class _QuizPageState extends State<QuizPage> {
   }
 }
 
-/// =================================================================
-/// CERTIFICATE PAGE
-/// =================================================================
-// class CertificatePage extends StatelessWidget {
-//   final String title;
-//   final String previewImage; // sample image
-//   final String downloadUrl; // pdf to download
-//   final String priceText;
-//
-//   const CertificatePage({
-//     super.key,
-//     required this.title,
-//     required this.previewImage,
-//     required this.downloadUrl,
-//     required this.priceText,
-//   });
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         backgroundColor: AppColors.primary,
-//         foregroundColor: Colors.white,
-//         title: Text('$title • Certificate', overflow: TextOverflow.ellipsis),
-//       ),
-//       backgroundColor: AppColors.background,
-//       body: ListView(
-//         padding: const EdgeInsets.all(16),
-//         children: [
-//           Card(
-//             color: AppColors.surface,
-//             elevation: 0,
-//             shape: RoundedRectangleBorder(
-//               borderRadius: BorderRadius.circular(16),
-//               side: const BorderSide(color: AppColors.border),
-//             ),
-//             child: Padding(
-//               padding: const EdgeInsets.all(14),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   const Text('Certificate of Completion',
-//                       style: TextStyle(
-//                           fontWeight: FontWeight.w800,
-//                           fontSize: 18,
-//                           color: AppColors.textPrimary)),
-//                   const SizedBox(height: 6),
-//                   Text(priceText,
-//                       style: const TextStyle(color: AppColors.textSecondary)),
-//                   const SizedBox(height: 12),
-//                   ClipRRect(
-//                     borderRadius: BorderRadius.circular(12),
-//                     child: Image.network(previewImage,
-//                         height: 180, fit: BoxFit.cover),
-//                   ),
-//                   const SizedBox(height: 14),
-//                   Row(
-//                     children: [
-//                       Expanded(
-//                         child: ElevatedButton(
-//                           style: ElevatedButton.styleFrom(
-//                             backgroundColor: AppColors.primary,
-//                             foregroundColor: Colors.white,
-//                             elevation: 0,
-//                             shape: RoundedRectangleBorder(
-//                                 borderRadius: BorderRadius.circular(12)),
-//                           ),
-//                           onPressed: () => launchUrl(Uri.parse(downloadUrl),
-//                               mode: LaunchMode.externalApplication),
-//                           child: const Text('Buy / Download Sample'),
-//                         ),
-//                       ),
-//                     ],
-//                   )
-//                 ],
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-
-
-
-
-
-
 class CertificatePage extends StatelessWidget {
   final String courseTitle;
-  final String userName;               // 🔥 required (passed via Navigator)
+  final String userName;
   final DateTime completedOn;
-  final String priceText;              // optional label (e.g., “Free sample”/“₹299”)
+  final String priceText;
 
   const CertificatePage({
     super.key,
@@ -1535,14 +2098,15 @@ class CertificatePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        title: Text('$courseTitle • Certificate', overflow: TextOverflow.ellipsis),
+        title:
+            Text('$courseTitle • Certificate', overflow: TextOverflow.ellipsis),
       ),
       backgroundColor: AppColors.background,
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Card(
-            color: AppColors.surface,
+            color: AppColors.background,
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -1564,7 +2128,8 @@ class CertificatePage extends StatelessWidget {
                             color: AppColors.textPrimary,
                           )),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withOpacity(.08),
                           borderRadius: BorderRadius.circular(24),
@@ -1579,7 +2144,8 @@ class CertificatePage extends StatelessWidget {
                   ),
                   if (priceText.isNotEmpty) ...[
                     const SizedBox(height: 6),
-                    Text(priceText, style: const TextStyle(color: AppColors.textSecondary)),
+                    Text(priceText,
+                        style: const TextStyle(color: AppColors.textSecondary)),
                   ],
 
                   const SizedBox(height: 12),
@@ -1609,7 +2175,10 @@ class CertificatePage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12)),
                           ),
                           onPressed: () => _downloadPdf(context),
-                          label: const Text('Download PDF',style: TextStyle(fontSize: 12.5),),
+                          label: const Text(
+                            'Download PDF',
+                            style: TextStyle(fontSize: 12.5),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -1756,7 +2325,8 @@ class CertificatePage extends StatelessWidget {
                     ),
                     pw.SizedBox(height: 8),
                     pw.Text('Course completed on $dateStr',
-                        style: pw.TextStyle(color: textSecondary, fontSize: 12)),
+                        style:
+                            pw.TextStyle(color: textSecondary, fontSize: 12)),
                     pw.Spacer(),
 
                     // footer row
@@ -1773,7 +2343,8 @@ class CertificatePage extends StatelessWidget {
                                     color: textPrimary,
                                     fontWeight: pw.FontWeight.bold)),
                             pw.Text('Academic Director, Auratech Academy',
-                                style: pw.TextStyle(color: textSecondary, fontSize: 10)),
+                                style: pw.TextStyle(
+                                    color: textSecondary, fontSize: 10)),
                           ],
                         ),
                         pw.Column(
@@ -1787,7 +2358,7 @@ class CertificatePage extends StatelessWidget {
                             pw.SizedBox(height: 4),
                             pw.BarcodeWidget(
                               data:
-                              'AURATECH|$userName|$courseTitle|$dateStr', // simple verifiable payload
+                                  'AURATECH|$userName|$courseTitle|$dateStr', // simple verifiable payload
                               barcode: pw.Barcode.qrCode(),
                               width: 64,
                               height: 64,
@@ -1876,7 +2447,8 @@ class _CertificatePreview extends StatelessWidget {
                           color: AppColors.textPrimary,
                         )),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withOpacity(.08),
                         borderRadius: BorderRadius.circular(16),
@@ -1913,7 +2485,8 @@ class _CertificatePreview extends StatelessWidget {
                 const SizedBox(height: 18),
 
                 const Text('Presented to',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                    style: TextStyle(
+                        color: AppColors.textSecondary, fontSize: 12)),
                 const SizedBox(height: 4),
                 Text(
                   userName,
@@ -1926,7 +2499,8 @@ class _CertificatePreview extends StatelessWidget {
                 const SizedBox(height: 8),
                 const Text(
                   'For successfully completing the online course',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  style:
+                      TextStyle(color: AppColors.textSecondary, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 Text(courseTitle,
@@ -1936,7 +2510,8 @@ class _CertificatePreview extends StatelessWidget {
                         fontSize: 14)),
                 const SizedBox(height: 4),
                 Text('Course completed on $completedOn',
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                    style: const TextStyle(
+                        color: AppColors.textSecondary, fontSize: 12)),
                 const Spacer(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1944,7 +2519,9 @@ class _CertificatePreview extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
-                        SizedBox(height: 1, width: 160,
+                        SizedBox(
+                          height: 1,
+                          width: 160,
                           child: DecoratedBox(
                             decoration: BoxDecoration(color: Color(0xFFE5E7EB)),
                           ),
@@ -1956,17 +2533,19 @@ class _CertificatePreview extends StatelessWidget {
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12)),
                         Text('Academic Director, Auratech Academy',
-                            style:
-                            TextStyle(color: AppColors.textSecondary, fontSize: 10)),
+                            style: TextStyle(
+                                color: AppColors.textSecondary, fontSize: 10)),
                       ],
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: const [
                         Text('Verify Authenticity',
-                            style: TextStyle(color: AppColors.textSecondary, fontSize: 10)),
+                            style: TextStyle(
+                                color: AppColors.textSecondary, fontSize: 10)),
                         SizedBox(height: 6),
-                        Icon(Icons.qr_code_2_rounded, size: 40, color: AppColors.textSecondary),
+                        Icon(Icons.qr_code_2_rounded,
+                            size: 40, color: AppColors.textSecondary),
                       ],
                     ),
                   ],
