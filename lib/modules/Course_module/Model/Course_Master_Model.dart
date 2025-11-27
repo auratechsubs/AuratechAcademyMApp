@@ -43,6 +43,8 @@ class CourseMaster {
   final String language;
   final String numberOfStudents;
   final String courseImage;
+  final String certificate_img;
+  final String certificate_text;
   final String quizzes;
   final String createDate;
   final String updateDate;
@@ -75,6 +77,8 @@ class CourseMaster {
     required this.createDate,
     required this.updateDate,
     required this.is_enroll,
+    required this.certificate_img,
+    required this.certificate_text,
   });
 
   factory CourseMaster.fromJson(Map<String, dynamic> json) {
@@ -112,6 +116,8 @@ class CourseMaster {
       language: json['Language'] ?? '',
       numberOfStudents: json['Number_of_students'] ?? '',
       courseImage: json['Course_img'] ?? '',
+      certificate_img: json['certificate_img'] ?? '',
+      certificate_text: json['certificate_text'] ?? '',
       quizzes: json['Quizzes'] ?? '',
       createDate: json['create_date'] ?? '',
       updateDate: json['update_date'] ?? '',

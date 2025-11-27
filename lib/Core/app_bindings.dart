@@ -4,6 +4,7 @@ import '../modules/Authentication_module/Controller/Login_Controller.dart';
 import '../modules/Authentication_module/Controller/Google_Signup_Controller.dart';
 import '../modules/Authentication_module/Controller/Simple_Signup_Controller.dart';
 
+import '../modules/Course_module/Controller/Learning_Module_Controller.dart';
 import '../modules/Homescreen_module/Controller/Coursesegment_Controller.dart';
 import '../modules/Homescreen_module/Controller/Flash_deal_controller.dart';
 import '../modules/Homescreen_module/Controller/HomeScreen_Controller.dart';
@@ -54,6 +55,7 @@ class AppBindings extends Bindings {
     Get.lazyPut<SuccessStoryController>(() => SuccessStoryController(), fenix: true);
     Get.lazyPut<WebinarController>(() => WebinarController(), fenix: true);
     Get.lazyPut<CourseSegmantMasterController>(() => CourseSegmantMasterController(), fenix: true);
+    Get.lazyPut<Learning_Module_Controller>(() => Learning_Module_Controller(), fenix: true);
 
     // Category & Courses
     Get.lazyPut<Category_Controller>(() => Category_Controller(), fenix: true);

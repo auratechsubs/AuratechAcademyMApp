@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:upgrader/upgrader.dart';
 import '../../../utils/global_variable.dart';
 import '../../../widget/custombottombar.dart';
 import '../../../utils/storageservice.dart';
 import 'IntroductionScreen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final Upgrader upgrader;
+  const SplashScreen({super.key,required this.upgrader});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -33,7 +35,29 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (userId != null && token != null) {
         GlobalVariables.isLogin = true;
-        Get.offAll(() => const BottomnavBar());
+        Get.offAll(() => UpgradeAlert(
+          upgrader: widget.upgrader,
+          showPrompt: true,
+          showIgnore: true,
+          showLater: true,
+          barrierDismissible: true,
+          dialogStyle: UpgradeDialogStyle.cupertino,
+
+          onIgnore: () {
+            debugPrint('User chose to ignore this version.');
+            return true;
+          },
+          onLater: () {
+            debugPrint('User chose to be reminded later.');
+            return true;
+          },
+          onUpdate: () {
+            debugPrint('User chose to update the app.');
+            return true;
+          },
+
+          child: const BottomnavBar(),
+        ),);
       } else {
         GlobalVariables.isLogin = false;
         Get.offAll(() => const OnboardingScreen());

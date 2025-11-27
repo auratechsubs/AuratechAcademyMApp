@@ -1,20 +1,17 @@
 import 'package:auratech_academy/ApiServices/ApiServices.dart';
 import 'package:get/get.dart';
- import 'package:auratech_academy/utils/logx.dart';
+import 'package:auratech_academy/utils/logx.dart';
 
 import '../Model/SuccessStoryModel.dart';
 
 class SuccessStoryController extends GetxController {
- final ApiService _api = ApiService(baseUrl: 'https://api.auratechacademy.com/');
-  /// Observables
+  final ApiService _api = ApiService(baseUrl: 'https://api.auratechacademy.com/');
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
   final RxList<SuccessStoryModel> stories = <SuccessStoryModel>[].obs;
 
-  /// API Endpoint
   static const String endpoint = "success_story/";
 
-  /// Fetch Stories
   Future<void> fetchSuccessStories() async {
     LogX.printLog("🚀 Fetching Success Stories...");
 
@@ -24,9 +21,9 @@ class SuccessStoryController extends GetxController {
       stories.clear();
 
       final List<SuccessStoryModel> result =
-      await _api.getList<SuccessStoryModel>(
+          await _api.getList<SuccessStoryModel>(
         endpoint,
-            (json) => SuccessStoryModel.fromJson(json),
+        (json) => SuccessStoryModel.fromJson(json),
       );
 
       if (result.isEmpty) {
@@ -43,7 +40,7 @@ class SuccessStoryController extends GetxController {
       isLoading.value = false;
     }
   }
-//   calling the fetch method on controller initialization
+
   @override
   void onInit() {
     super.onInit();

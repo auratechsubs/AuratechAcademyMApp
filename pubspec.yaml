@@ -70,6 +70,7 @@ dependencies:
   printing: ^5.14.2
   intl: ^0.20.2
   pdf: ^3.11.3
+  upgrader: ^12.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

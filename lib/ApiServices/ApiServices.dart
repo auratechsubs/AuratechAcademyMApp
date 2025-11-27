@@ -37,7 +37,7 @@ class ApiService {
   }
 
 
-  // Generic GET: Single object
+  // Generic GET: Single object 
   Future<List<T>> getListFromObject<T>(
       String endpoint,
 

@@ -36,6 +36,8 @@ class SuccessStoryModel {
   final String? description;
   final String? remarks;
   final String? extra;
+  final String? video;
+  final String? img;
   final int? createUser;
   final int? updateUser;
 
@@ -54,6 +56,8 @@ class SuccessStoryModel {
     this.extra,
     this.createUser,
     this.updateUser,
+    this.img,
+    this.video
   });
 
   factory SuccessStoryModel.fromJson(Map<String, dynamic> json) {
@@ -68,6 +72,8 @@ class SuccessStoryModel {
       recordStatus: json['record_status'] as String?,
       name: json['name'] as String?,
       placement: json['placement'] as String?,
+      video: json['video'] as String?,
+      img: json['img'] as String?,
       package: json['package'] as String?,
       description: json['description'] as String?,
       remarks: json['remarks'] as String?,
@@ -92,6 +98,8 @@ class SuccessStoryModel {
     'extra': extra,
     'create_user': createUser,
     'update_user': updateUser,
+    'video': video,
+    'img': img,
   };
 }
 

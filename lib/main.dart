@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:upgrader/upgrader.dart';
 
 import 'Core/app_bindings.dart';
 import 'Core/app_theme.dart';
@@ -30,10 +32,22 @@ Future<void> _bootstrap() async {
     statusBarColor: Colors.transparent,
   ));
 }
-
+const bool kForceUpgradeDialogInDebug = false;
 void main() {
   runZonedGuarded(() async {
     await _bootstrap();
+
+    if (kDebugMode && kForceUpgradeDialogInDebug) {
+      await Upgrader.clearSavedSettings();
+    }
+
+    final upgrader = Upgrader(
+      debugLogging: kDebugMode,
+      // debugDisplayOnce: true,
+       debugDisplayAlways: kDebugMode && kForceUpgradeDialogInDebug,
+       countryCode: 'IN',
+      durationUntilAlertAgain: const Duration(days: 2),
+    );
 
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
@@ -47,7 +61,7 @@ void main() {
     };
     Get.put(LocalizationController(), permanent: true);
 
-    runApp(const MyApp());
+    runApp(  MyApp(upgrader: upgrader));
   }, (error, stack) {
     debugPrint('🚨 Uncaught (zoned): $error');
     debugPrint('$stack');
@@ -55,7 +69,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Upgrader upgrader;
+  const MyApp({super.key, required this.upgrader});
 
   @override
   Widget build(BuildContext context) {
@@ -69,8 +84,8 @@ class MyApp extends StatelessWidget {
           fallbackLocale: AppTranslations.defaultLocale,
           theme: AppTheme.light,
           initialBinding: AppBindings(),
-          home: const SplashScreen(),
-          defaultTransition: Transition.cupertino,
+      home:   SplashScreen(upgrader: upgrader,),
+           defaultTransition: Transition.cupertino,
           transitionDuration: const Duration(milliseconds: 220),
           scrollBehavior: const MaterialScrollBehavior().copyWith(
             dragDevices: {
