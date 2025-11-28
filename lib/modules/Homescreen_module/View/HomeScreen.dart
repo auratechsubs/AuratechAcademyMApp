@@ -194,6 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(height: isTablet ? 24 : 16),
                     TextField(
+                      readOnly: true,
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => SearchScreen()),
@@ -1378,10 +1379,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-             //  succes story vidoe section
+              //  succes story vidoe section
               SizedBox(height: isTablet ? 32 : 16),
               // SuccessStoriesSection(),
-             // Bottom Padding
+              // Bottom Padding
               _buildFooterSection(isTablet),
               SizedBox(height: isTablet ? 24 : 16),
             ],
@@ -1514,11 +1515,11 @@ class _HomeScreenState extends State<HomeScreen> {
               return SizedBox(
                 height: cardHeight,
                 child: Obx(() {
-                   if (webinarController.isLoading.value) {
+                  if (webinarController.isLoading.value) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                   if (webinarController.errorMessage.isNotEmpty) {
+                  if (webinarController.errorMessage.isNotEmpty) {
                     return Center(
                       child: Text(
                         webinarController.errorMessage.value,
@@ -2189,7 +2190,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
   Widget _buildSuccessStoriesSection(bool isTablet) {
     return Padding(
       padding:
@@ -2298,7 +2298,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 
   Widget _buildTrendingTechSection(bool isTablet) {
     final trendingTech = [
@@ -3151,397 +3150,6 @@ class SuccessStory {
   });
 }
 
-// class SuccessStoriesSection extends StatefulWidget {
-//   const SuccessStoriesSection({super.key});
-//
-//   @override
-//   State<SuccessStoriesSection> createState() => _SuccessStoriesSectionState();
-// }
-//
-// class _SuccessStoriesSectionState extends State<SuccessStoriesSection> {
-//   final PageController _pageController = PageController(
-//     viewportFraction: 0.9,
-//   );
-//
-//   Widget _buildSuccessStoryCard(
-//     SuccessStory story,
-//     bool isTablet,
-//     VideoPlayerController controller,
-//   ) {
-//     final name = story.name;
-//     final placement = '${story.course} at ${story.company}';
-//     final package = story.package;
-//     final description =
-//         'Auratech Academy student placed at ${story.company} as ${story.course}.'; // dummy desc agar chahiye to change
-//     final courseTitle = story.course;
-//
-//     String roleText = placement;
-//     String companyText = '';
-//     if (placement.contains(' at ')) {
-//       final parts = placement.split(' at ');
-//       roleText = parts[0];
-//       companyText = parts.length > 1 ? parts[1] : '';
-//     }
-//
-//     // Dummy profile image – tu apne project ke hisaab se change kar sakta
-//     final String imageUrl = "https://i.pravatar.cc/150?u=$name";
-//
-//     return Container(
-//       width: isTablet ? 300 : 280,
-//       margin: const EdgeInsets.only(right: 16),
-//       decoration: BoxDecoration(
-//         color: Colors.white,
-//         borderRadius: BorderRadius.circular(21),
-//         border: Border.all(color: AppColors.primary, width: 1),
-//       ),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           // 🔹 VIDEO SECTION (yahi pe video play hoga)
-//           SizedBox(
-//             height: 100,
-//             width: double.infinity,
-//             child: ClipRRect(
-//               borderRadius: const BorderRadius.only(
-//                 topLeft: Radius.circular(20),
-//                 topRight: Radius.circular(20),
-//               ),
-//               child: Stack(
-//                 fit: StackFit.expand,
-//                 children: [
-//                   // Video background
-//                   controller.value.isInitialized
-//                       ? FittedBox(
-//                           fit: BoxFit.cover,
-//                           child: SizedBox(
-//                             width: controller.value.size.width,
-//                             height: controller.value.size.height,
-//                             child: VideoPlayer(controller),
-//                           ),
-//                         )
-//                       : Container(
-//                           color: AppColors.surface,
-//                           alignment: Alignment.center,
-//                           child:
-//                               const CircularProgressIndicator(strokeWidth: 2),
-//                         ),
-//
-//                   // Center play/pause button
-//                   Center(
-//                     child: _PlayPauseButton(controller: controller),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-//
-//           // 🔹 Header with image + basic info
-//           Container(
-//             padding: EdgeInsets.all(isTablet ? 20 : 16),
-//             decoration: BoxDecoration(
-//               gradient: LinearGradient(
-//                 colors: [
-//                   AppColors.primary.withOpacity(0.8),
-//                   AppColors.primary.withOpacity(0.6),
-//                 ],
-//                 begin: Alignment.topLeft,
-//                 end: Alignment.bottomRight,
-//               ),
-//             ),
-//             child: Row(
-//               children: [
-//                 CircleAvatar(
-//                   radius: isTablet ? 30 : 25,
-//                   backgroundImage: NetworkImage(imageUrl),
-//                 ),
-//                 const SizedBox(width: 12),
-//                 Expanded(
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Text(
-//                         name,
-//                         style: TextStyle(
-//                           fontSize: isTablet ? 18 : 16,
-//                           fontWeight: FontWeight.bold,
-//                           color: Colors.white,
-//                         ),
-//                       ),
-//                       const SizedBox(height: 4),
-//                       Text(
-//                         companyText.isNotEmpty
-//                             ? '$roleText at $companyText'
-//                             : roleText,
-//                         style: TextStyle(
-//                           fontSize: isTablet ? 14 : 12,
-//                           color: Colors.white.withOpacity(0.9),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//                 if (package.isNotEmpty)
-//                   Container(
-//                     padding: const EdgeInsets.symmetric(
-//                       horizontal: 12,
-//                       vertical: 6,
-//                     ),
-//                     decoration: BoxDecoration(
-//                       color: Colors.white.withOpacity(0.2),
-//                       borderRadius: BorderRadius.circular(12),
-//                     ),
-//                     child: Text(
-//                       package,
-//                       style: TextStyle(
-//                         fontSize: isTablet ? 14 : 12,
-//                         color: Colors.white,
-//                         fontWeight: FontWeight.bold,
-//                       ),
-//                     ),
-//                   ),
-//               ],
-//             ),
-//           ),
-//
-//           // 🔹 Story content
-//           Expanded(
-//             child: Padding(
-//               padding: EdgeInsets.all(isTablet ? 20 : 16),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     '"$description"',
-//                     style: TextStyle(
-//                       fontSize: isTablet ? 15 : 13,
-//                       color: AppColors.textSecondary,
-//                       fontStyle: FontStyle.italic,
-//                       height: 1.4,
-//                     ),
-//                     maxLines: 3,
-//                     overflow: TextOverflow.ellipsis,
-//                   ),
-//                   const Spacer(),
-//                   Container(
-//                     padding: const EdgeInsets.all(12),
-//                     decoration: BoxDecoration(
-//                       color: AppColors.primary.withOpacity(0.1),
-//                       borderRadius: BorderRadius.circular(12),
-//                     ),
-//                     child: Row(
-//                       children: [
-//                         Icon(
-//                           Icons.school_rounded,
-//                           color: AppColors.primary,
-//                           size: isTablet ? 20 : 18,
-//                         ),
-//                         const SizedBox(width: 8),
-//                         Expanded(
-//                           child: Text(
-//                             'Completed: $courseTitle',
-//                             style: TextStyle(
-//                               fontSize: isTablet ? 14 : 12,
-//                               color: AppColors.primary,
-//                               fontWeight: FontWeight.w600,
-//                             ),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   // Dummy 5 students – yaha baad me API / Firestore ka data chipka dena
-//   late final List<SuccessStory> _stories = [
-//     const SuccessStory(
-//       name: 'Aditi Sharma',
-//       course: 'Flutter Full-Stack Pro',
-//       company: 'TCS Digital',
-//       package: '₹10 LPA',
-//       videoUrl:
-//           'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-//     ),
-//     const SuccessStory(
-//       name: 'Rahul Verma',
-//       course: 'Android + Flutter Mastery',
-//       company: 'Infosys',
-//       package: '₹7.2 LPA',
-//       videoUrl:
-//           'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-//     ),
-//     const SuccessStory(
-//       name: 'Sneha Patel',
-//       course: 'UI/UX + Flutter Bootcamp',
-//       company: 'Zomato',
-//       package: '₹9 LPA',
-//       videoUrl:
-//           'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-//     ),
-//     const SuccessStory(
-//       name: 'Arjun Mehta',
-//       course: 'Backend + Flutter Expert',
-//       company: 'Swiggy',
-//       package: '₹8.5 LPA',
-//       videoUrl:
-//           'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
-//     ),
-//     const SuccessStory(
-//       name: 'Kritika Singh',
-//       course: 'Hybrid App Dev Program',
-//       company: 'Paytm',
-//       package: '₹11 LPA',
-//       videoUrl:
-//           'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
-//     ),
-//   ];
-//
-//   final List<VideoPlayerController> _videoControllers = [];
-//   bool _isInitialized = false;
-//   int _currentIndex = 0;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _initVideoControllers();
-//   }
-//
-//   Future<void> _initVideoControllers() async {
-//     // Video controllers create
-//     for (final story in _stories) {
-//       final controller = VideoPlayerController.networkUrl(
-//         Uri.parse(story.videoUrl),
-//       );
-//       _videoControllers.add(controller);
-//     }
-//
-//     // Sabko initialize + looping enable
-//     await Future.wait(
-//       _videoControllers.map((c) async {
-//         await c.initialize();
-//         c.setLooping(true);
-//       }),
-//     );
-//
-//     if (!mounted) return;
-//     setState(() {
-//       _isInitialized = true;
-//     });
-//
-//     // Agar first video auto-play chahiye:
-//     // _playVideoAt(0);
-//   }
-//
-//   void _playVideoAt(int index) {
-//     for (int i = 0; i < _videoControllers.length; i++) {
-//       final controller = _videoControllers[i];
-//
-//       if (i == index) {
-//         if (!controller.value.isPlaying) {
-//           controller.play();
-//         }
-//       } else {
-//         if (controller.value.isPlaying) {
-//           controller.pause();
-//         }
-//         controller.seekTo(Duration.zero);
-//       }
-//     }
-//   }
-//
-//   @override
-//   void dispose() {
-//     for (final c in _videoControllers) {
-//       c.dispose();
-//     }
-//     _pageController.dispose();
-//     super.dispose();
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final theme = Theme.of(context);
-//     final isTablet = MediaQuery.of(context).size.width >= 600;
-//
-//     return SizedBox(
-//       height: 400,
-//       child: Padding(
-//         padding: const EdgeInsets.symmetric(horizontal: 12.0),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Text(
-//               'Our placed students sharing their journey',
-//               style: TextStyle(
-//                 fontSize: 18,
-//                 color: theme.colorScheme.onSurface.withOpacity(0.7),
-//               ),
-//             ),
-//             const SizedBox(height: 16),
-//
-//             // Main content
-//             Expanded(
-//               child: !_isInitialized
-//                   ? const Center(child: CircularProgressIndicator())
-//                   : PageView.builder(
-//                       controller: _pageController,
-//                       itemCount: _stories.length,
-//                       onPageChanged: (index) {
-//                         setState(() => _currentIndex = index);
-//                         _playVideoAt(
-//                             index); // scroll pe jo card active, wahi play
-//                       },
-//                       itemBuilder: (context, index) {
-//                         final story = _stories[index];
-//                         final controller = _videoControllers[index];
-//
-//                         return Padding(
-//                           padding:
-//                               const EdgeInsets.only(right: 16, bottom: 8.0),
-//                           child: _buildSuccessStoryCard(
-//                             story,
-//                             isTablet,
-//                             controller,
-//                           ),
-//                         );
-//                       },
-//                     ),
-//             ),
-//
-//             const SizedBox(height: 8),
-//
-//             // Page indicator (dots)
-//             Row(
-//               mainAxisAlignment: MainAxisAlignment.center,
-//               children: List.generate(_stories.length, (i) {
-//                 final isActive = i == _currentIndex;
-//                 return AnimatedContainer(
-//                   duration: const Duration(milliseconds: 200),
-//                   margin: const EdgeInsets.symmetric(horizontal: 4),
-//                   height: 6,
-//                   width: isActive ? 18 : 6,
-//                   decoration: BoxDecoration(
-//                     borderRadius: BorderRadius.circular(12),
-//                     color: isActive
-//                         ? theme.colorScheme.primary
-//                         : theme.colorScheme.onSurface.withOpacity(0.2),
-//                   ),
-//                 );
-//               }),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 class SuccessStoryCard extends StatefulWidget {
   final SuccessStoryModel story;
   final bool isTablet;
@@ -3792,8 +3400,6 @@ class _SuccessStoryCardState extends State<SuccessStoryCard> {
     );
   }
 }
-
-
 
 class _PlayPauseButton extends StatefulWidget {
   final VideoPlayerController controller;

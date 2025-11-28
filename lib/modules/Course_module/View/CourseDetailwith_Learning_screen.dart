@@ -22,8 +22,14 @@ import '../Model/Learning_Module_Model.dart';
 
 class CourseDetailPage extends StatefulWidget {
   final CourseMaster course;
-  const CourseDetailPage({super.key, required this.course});
-
+  final List<CourseMaster> relatedCourses;   // NEW
+  final List<UserNote> userNotes;            // NEW (agar yahi se pass karna hai)
+  const CourseDetailPage({
+    super.key,
+    required this.course,
+    this.relatedCourses = const [],
+    this.userNotes = const [],
+  });
   @override
   State<CourseDetailPage> createState() => _CourseDetailPageState();
 }
@@ -56,8 +62,6 @@ class _CourseDetailPageState extends State<CourseDetailPage>
     if (p.startsWith('http://') || p.startsWith('https://')) return path;
     return 'https://api.auratechacademy.com/${path.replaceFirst(RegExp(r"^/+"), "")}';
   }
-
-  /// ----------------- BUILD VIDEO MODULES FROM API -----------------
 
   List<CourseModule> _buildVideoModules(List<CourseVideoModel> items) {
     final videos =
@@ -114,7 +118,6 @@ class _CourseDetailPageState extends State<CourseDetailPage>
     }).toList();
   }
 
-  /// ----------------- BUILD NOTES / PDF MODULES FROM API -----------------
   List<NotesModule> _buildNotesModules(List<CourseVideoModel> items) {
     final pdfItems = items.where((v) => (v.pdf_file ?? '').isNotEmpty).toList();
 
@@ -289,6 +292,19 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                       );
                     },
                     onOpenCertificate: () {
+                      final learningCtrl =
+                          Get.find<Learning_Module_Controller>();
+
+                      if (!learningCtrl.courseCompleted.value) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Please complete all quizzes to unlock your certificate.'),
+                          ),
+                        );
+                        return;
+                      }
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -297,6 +313,21 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                             userName: 'Sohil Khan',
                             completedOn: DateTime.now(),
                             priceText: '₹349 (Inc. GST)',
+                            quizScores: learningCtrl.quizScores
+                                .toList(), // ✅ score list pass
+                          ),
+                        ),
+                      );
+                    },
+                    userNotes: widget.userNotes,
+                    relatedCourses: widget.relatedCourses,
+                    onOpenRelatedCourse: (course) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CourseDetailPage(
+                            course: course,
+                            relatedCourses: widget.relatedCourses, // ya nayi list
                           ),
                         ),
                       );
@@ -363,10 +394,8 @@ class _TabViews extends StatelessWidget {
   final CourseMaster course;
   const _TabViews({required this.tabController, required this.course});
 
-  // Turn HTML-ish text into bullet/numbered lines for Overview learnings
   List<_Line> _parseLearn(String html) => _HtmlText.toLines(html);
 
-  // Curriculum may also be HTML; parse the same way
   List<_Line> _parseCurriculum(String html) => _HtmlText.toLines(html);
 
   @override
@@ -376,7 +405,6 @@ class _TabViews extends StatelessWidget {
     final curriculumLines = _parseCurriculum(detail?.curriculum ?? '');
     final theme = Theme.of(context);
 
-    // Bound the TabBarView height to avoid layout exceptions in slivers
     final double tabViewHeight = 340;
 
     return Padding(
@@ -495,6 +523,9 @@ class _LearningHub extends StatelessWidget {
   final int totalAssessments;
   final int totalResources;
 
+  final List<UserNote> userNotes;
+  final List<CourseMaster> relatedCourses;
+  final void Function(CourseMaster)? onOpenRelatedCourse;
   const _LearningHub({
     required this.course,
     required this.onOpenVideos,
@@ -504,6 +535,9 @@ class _LearningHub extends StatelessWidget {
     required this.totalVideos,
     required this.totalAssessments,
     required this.totalResources,
+    this.userNotes = const [],
+    this.relatedCourses = const [],
+    this.onOpenRelatedCourse,
   });
 
   @override
@@ -668,17 +702,12 @@ class _LearningHub extends StatelessWidget {
                                 ),
 
                                 // Notes tab
-                                _InfoPlaceholder(
-                                  title: 'Notes',
-                                  message:
-                                      'Your saved notes will appear here once you start learning.',
-                                ),
+                                _NotesTab(userNotes: userNotes),
 
-                                // Related courses
-                                _InfoPlaceholder(
-                                  title: 'Related Courses',
-                                  message:
-                                      'We’ll recommend related courses here. (Coming soon)',
+                                // 3️⃣ Related courses tab – NEW
+                                _RelatedCoursesTab(
+                                  courses: relatedCourses,
+                                  onOpenCourse: onOpenRelatedCourse,
                                 ),
                               ],
                             ),
@@ -701,6 +730,7 @@ class CertificatePage extends StatelessWidget {
   final String userName;
   final DateTime completedOn;
   final String priceText;
+  final List<int> quizScores;
 
   const CertificatePage({
     super.key,
@@ -708,6 +738,7 @@ class CertificatePage extends StatelessWidget {
     required this.userName,
     required this.completedOn,
     this.priceText = '',
+    this.quizScores = const [], // ✅ default empty list
   });
 
   // ---------------------- UI ----------------------
@@ -715,6 +746,8 @@ class CertificatePage extends StatelessWidget {
   Widget build(BuildContext context) {
     // UI me dd/MM/yyyy jaise reference image
     final dateStr = DateFormat('dd/MM/yyyy').format(completedOn);
+    final int totalQuizzes = quizScores.length;
+    final int totalCorrect = quizScores.fold(0, (sum, s) => sum + s);
 
     return Scaffold(
       appBar: AppBar(
@@ -777,6 +810,25 @@ class CertificatePage extends StatelessWidget {
                   ],
 
                   const SizedBox(height: 12),
+                  // score summary
+                  if (totalQuizzes > 0) ...[
+                    Text(
+                      'Quiz Performance',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Completed $totalQuizzes quizzes • Total correct answers: $totalCorrect',
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
 
                   AspectRatio(
                     aspectRatio: 6 / 7,
@@ -917,19 +969,15 @@ class CertificatePage extends StatelessWidget {
                                       width: 100,
                                       height: 40,
                                       decoration: pw.BoxDecoration(
-                                        color: PdfColors.white,
-                                        borderRadius:
-                                            pw.BorderRadius.circular(6),
-                                        border: pw.Border.all(color: navy)
-                                      ),
+                                          color: PdfColors.white,
+                                          borderRadius:
+                                              pw.BorderRadius.circular(6),
+                                          border: pw.Border.all(color: navy)),
                                       child: pw.Center(
-                                        child: pw.Image(
-                                          logoImage,
-
-                                         fit: pw.BoxFit.contain // optional
-                                        ),
+                                        child: pw.Image(logoImage,
+                                            fit: pw.BoxFit.contain // optional
+                                            ),
                                       ),
-
                                     ),
                                     pw.SizedBox(height: 8),
                                     pw.Text(
@@ -1676,9 +1724,19 @@ class _LearningVideosPageState extends State<LearningVideosPage> {
   int _currentModuleIndex = 0;
   int _currentLessonIndex = 0;
 
-  late List<List<bool>> _videoUnlocked; // kaun sa video unlock hai
-  late List<List<bool>> _videoCompleted; // kaun sa video done hai
-  late List<List<bool>> _quizUnlocked; // kaun sa quiz button unlock hai
+  late List<List<bool>> _videoUnlocked;
+  late List<List<bool>> _videoCompleted;
+  late List<List<bool>> _quizUnlocked;
+  late List<List<bool>> _quizCompleted;
+  List<int> _scores = [];
+  final Learning_Module_Controller learningCtrl = Get.find();
+
+
+
+  bool get allQuizzesCompleted {
+    final total = learningCtrl.totalQuizLessons;
+    return total > 0 && learningCtrl.completedQuizVideoIds.length >= total;
+  }
 
   @override
   void initState() {
@@ -1688,12 +1746,29 @@ class _LearningVideosPageState extends State<LearningVideosPage> {
     _videoUnlocked = [];
     _videoCompleted = [];
     _quizUnlocked = [];
+    _quizCompleted = [];
+
+
 
     for (int mi = 0; mi < mCount; mi++) {
       final lCount = widget.modules[mi].lessons.length;
+
       _videoUnlocked.add(List<bool>.filled(lCount, false));
       _videoCompleted.add(List<bool>.filled(lCount, false));
-      _quizUnlocked.add(List<bool>.filled(lCount, false));
+      _quizUnlocked.add(List<bool>.filled(lCount, true));
+
+      _quizCompleted.add(List<bool>.filled(lCount, false));
+      for (int li = 0; li < lCount; li++) {
+        final lesson = widget.modules[mi].lessons[li];
+        final id = lesson.videoId;
+
+        if (id != null && learningCtrl.isLessonQuizCompleted(id)) {
+          _quizCompleted[mi][li] = true;
+          _videoCompleted[mi][li] = true;
+        }
+      }
+
+
     }
 
     // 🔓 by default: Module 0, Lesson 0 unlocked + auto-load
@@ -1904,8 +1979,15 @@ class _LearningVideosPageState extends State<LearningVideosPage> {
                                     lessonIndex == _currentLessonIndex;
                             final bool isUnlocked =
                                 _videoUnlocked[moduleIndex][lessonIndex];
+
+                            //final bool isDone = _videoCompleted[moduleIndex][lessonIndex];
+                           // final lesson = module.lessons[lessonIndex];
+                            final videoId = lesson.videoId ?? -1;
+
                             final bool isDone =
-                                _videoCompleted[moduleIndex][lessonIndex];
+                                learningCtrl.isLessonQuizCompleted(videoId) ||
+                                    _videoCompleted[moduleIndex][lessonIndex];
+
                             final bool quizUnlocked =
                                 _quizUnlocked[moduleIndex][lessonIndex];
 
@@ -2024,9 +2106,8 @@ class _LearningVideosPageState extends State<LearningVideosPage> {
                                     ),
                                   ),
 
-                                // ==== QUIZ BUTTON (per chapter, but same quiz set) ====
-
                                 // ==== QUIZ BUTTON (sirf us lesson ke liye jisme quiz hai) ====
+
                                 if (hasQuizForThisLesson)
                                   Padding(
                                     padding:
@@ -2037,200 +2118,57 @@ class _LearningVideosPageState extends State<LearningVideosPage> {
                                               debugPrint(
                                                   '❓ Opening quiz for module=$moduleIndex, lesson=$lessonIndex, quizzes=${lessonQuizzes.length}');
 
-                                              await Navigator.push(
+                                              final resultScore =
+                                                  await Navigator.push<int>(
                                                 context,
                                                 MaterialPageRoute(
                                                   builder: (_) => QuizPage(
                                                     title: lesson.title,
-                                                    quizzes:
-                                                        lessonQuizzes, // 👈 sirf iss lesson ka quiz list
-                                                    onCompleted: () {
-                                                      debugPrint(
-                                                          '🏁 Quiz completed for module=$moduleIndex, lesson=$lessonIndex');
-                                                      _unlockNextVideo(
-                                                          moduleIndex,
-                                                          lessonIndex);
-                                                    },
+                                                    quizzes: lessonQuizzes,
                                                   ),
                                                 ),
                                               );
-                                            }
-                                          : null,
-                                      icon: Icon(
-                                        quizUnlocked
-                                            ? Icons.quiz_rounded
-                                            : Icons.lock_outline_rounded,
-                                        size: 18,
-                                      ),
-                                      label: Text(
-                                        quizUnlocked
-                                            ? 'Start Quiz'
-                                            : 'Complete lesson to unlock quiz',
-                                      ),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: quizUnlocked
-                                            ? AppColors.primary
-                                            : AppColors.background,
-                                        foregroundColor: quizUnlocked
-                                            ? Colors.white
-                                            : AppColors.textSecondary,
-                                        elevation: 0,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 8),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
 
-                                // if (hasAnyQuiz)
-                                //   Padding(
-                                //     padding:
-                                //         const EdgeInsets.fromLTRB(16, 4, 16, 4),
-                                //     child: ElevatedButton.icon(
-                                //       onPressed: quizUnlocked
-                                //           ? () async {
-                                //               debugPrint(
-                                //                   '❓ Opening quiz for module=$moduleIndex, lesson=$lessonIndex');
-                                //
-                                //               await Navigator.push(
-                                //                 context,
-                                //                 MaterialPageRoute(
-                                //                   builder: (_) => QuizPage(
-                                //                     title: lesson.title,
-                                //                     quizzes: quizzes,
-                                //                     onCompleted: () {
-                                //                       debugPrint(
-                                //                           '🏁 Quiz completed for module=$moduleIndex, lesson=$lessonIndex');
-                                //                       _unlockNextVideo(
-                                //                           moduleIndex,
-                                //                           lessonIndex);
-                                //                     },
-                                //                   ),
-                                //                 ),
-                                //               );
-                                //             }
-                                //           : null,
-                                //       icon: Icon(
-                                //         quizUnlocked
-                                //             ? Icons.quiz_rounded
-                                //             : Icons.lock_outline_rounded,
-                                //         size: 18,
-                                //       ),
-                                //       label: Text(
-                                //         quizUnlocked
-                                //             ? 'Start Quiz'
-                                //             : 'Complete lesson to unlock quiz',
-                                //       ),
-                                //       style: ElevatedButton.styleFrom(
-                                //         backgroundColor: quizUnlocked
-                                //             ? AppColors.primary
-                                //             : AppColors.background,
-                                //         foregroundColor: quizUnlocked
-                                //             ? Colors.white
-                                //             : AppColors.textSecondary,
-                                //         elevation: 0,
-                                //         padding: const EdgeInsets.symmetric(
-                                //             horizontal: 12, vertical: 8),
-                                //         shape: RoundedRectangleBorder(
-                                //           borderRadius:
-                                //               BorderRadius.circular(10),
-                                //         ),
-                                //       ),
-                                //     ),
-                                //   ),
+                                              if (resultScore != null) {
+                                                final videoId = lesson.videoId;
 
-                                // ==== MARK AS DONE BUTTON ====
-                                // Padding(
-                                //   padding:
-                                //       const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                                //   child: Align(
-                                //     alignment: Alignment.centerRight,
-                                //     child: TextButton.icon(
-                                //       onPressed: isUnlocked && !isDone
-                                //           ? () {
-                                //               setState(() {
-                                //                 _videoCompleted[moduleIndex]
-                                //                     [lessonIndex] = true;
-                                //                 if (hasAnyQuiz) {
-                                //                   _quizUnlocked[moduleIndex]
-                                //                       [lessonIndex] = true;
-                                //                 }
-                                //               });
-                                //               debugPrint(
-                                //                   '✅ Marked done: module=$moduleIndex, lesson=$lessonIndex. Quiz unlocked=$hasAnyQuiz');
-                                //             }
-                                //           : null,
-                                //       icon: Icon(
-                                //         isDone
-                                //             ? Icons.check_circle_rounded
-                                //             : Icons.check_circle_outline,
-                                //         color: isDone
-                                //             ? AppColors.primary
-                                //             : AppColors.textSecondary,
-                                //       ),
-                                //       label: Text(
-                                //         isDone ? 'Completed' : 'Mark as done',
-                                //         style: TextStyle(
-                                //           color: isDone
-                                //               ? AppColors.primary
-                                //               : AppColors.textSecondary,
-                                //         ),
-                                //       ),
-                                //     ),
-                                //   ),
-                                // ),
-// ==== MARK AS DONE BUTTON ====
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: TextButton.icon(
-                                      onPressed: isUnlocked && !isDone
-                                          ? () {
-                                              setState(() {
-                                                _videoCompleted[moduleIndex]
-                                                    [lessonIndex] = true;
-
-                                                if (hasQuizForThisLesson) {
-                                                  // 🔓 iss lesson ke liye quiz unlock karo
-                                                  _quizUnlocked[moduleIndex]
+                                                setState(() {
+                                                  _quizCompleted[moduleIndex]
                                                       [lessonIndex] = true;
-                                                  debugPrint(
-                                                      '✅ Marked done (quiz available) → quiz unlocked for module=$moduleIndex, lesson=$lessonIndex');
-                                                } else {
-                                                  // ❌ quiz nahi hai → direct next video unlock karo
-                                                  debugPrint(
-                                                      '✅ Marked done (no quiz) → directly unlocking next video from module=$moduleIndex, lesson=$lessonIndex');
+                                                  _scores.add(resultScore);
+                                                  _videoCompleted[moduleIndex]
+                                                      [lessonIndex] = true;
                                                   _unlockNextVideo(
                                                       moduleIndex, lessonIndex);
+                                                });
+
+                                                if (videoId != null) {
+                                                  learningCtrl
+                                                      .markLessonQuizCompleted(
+                                                    videoId: videoId,
+                                                    score: resultScore,
+                                                  );
                                                 }
-                                              });
+
+                                                debugPrint(
+                                                    "🎯 Quiz completed with score: $resultScore");
+                                                debugPrint(
+                                                    '📊 Completed lessons: ${learningCtrl.completedQuizVideoIds.length}/${learningCtrl.totalQuizLessons}');
+                                              }
                                             }
                                           : null,
                                       icon: Icon(
-                                        isDone
+                                        learningCtrl.isLessonQuizCompleted(lesson.videoId ?? -1)
                                             ? Icons.check_circle_rounded
-                                            : Icons.check_circle_outline,
-                                        color: isDone
-                                            ? AppColors.primary
-                                            : AppColors.textSecondary,
+                                            : Icons.quiz_rounded,
                                       ),
                                       label: Text(
-                                        isDone ? 'Completed' : 'Mark as done',
-                                        style: TextStyle(
-                                          color: isDone
-                                              ? AppColors.primary
-                                              : AppColors.textSecondary,
-                                        ),
+                                        learningCtrl.isLessonQuizCompleted(lesson.videoId ?? -1)
+                                            ? "Quiz Completed"
+                                            : "Start Quiz",
                                       ),
                                     ),
                                   ),
-                                ),
-
                                 if (lessonIndex != module.lessons.length - 1)
                                   const Divider(
                                     height: 1,
@@ -2574,7 +2512,7 @@ class _QuizPageState extends State<QuizPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Quiz Completed!'),
         content: Column(
@@ -2604,22 +2542,21 @@ class _QuizPageState extends State<QuizPage> {
           ],
         ),
         actions: [
+          // 🔁 Retry: sirf dialog close + local reset
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              _resetQuiz();
-              widget.onCompleted?.call(); // 🔔 notify parent
+              Navigator.of(dialogContext).pop(); // dialog close
+              _resetQuiz();                      // same quiz dobara chalu
             },
             child: const Text('Retry Quiz'),
           ),
+
+          // ✅ Close: dialog close + QuizPage pop with score
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-
-              Future.delayed(const Duration(milliseconds: 100), () {
-                Get.back();
-                widget.onCompleted?.call();
-              });
+              Navigator.of(dialogContext).pop();     // dialog close
+              Navigator.of(context).pop(_score);     // 🔥 QuizPage pop WITH result
+              widget.onCompleted?.call();            // optional callback
             },
             child: const Text('Close'),
           ),
@@ -2788,485 +2725,177 @@ class _QuizPageState extends State<QuizPage> {
   }
 }
 
-// class CertificatePage extends StatelessWidget {
-//   final String courseTitle;
-//   final String userName;
-//   final DateTime completedOn;
-//   final String priceText;
-//
-//   const CertificatePage({
-//     super.key,
-//     required this.courseTitle,
-//     required this.userName,
-//     required this.completedOn,
-//     this.priceText = '',
-//   });
-//
-//   // ---------------------- UI ----------------------
-//   @override
-//   Widget build(BuildContext context) {
-//     final dateStr = DateFormat.yMMMMd().format(completedOn);
-//
-//     return Scaffold(
-//       appBar: AppBar(
-//         backgroundColor: AppColors.primary,
-//         foregroundColor: Colors.white,
-//         title:
-//             Text('$courseTitle • Certificate', overflow: TextOverflow.ellipsis),
-//       ),
-//       backgroundColor: AppColors.background,
-//       body: ListView(
-//         padding: const EdgeInsets.all(16),
-//         children: [
-//           Card(
-//             color: AppColors.background,
-//             elevation: 0,
-//             shape: RoundedRectangleBorder(
-//               borderRadius: BorderRadius.circular(16),
-//               side: const BorderSide(color: AppColors.border),
-//             ),
-//             child: Padding(
-//               padding: const EdgeInsets.all(14),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   // header
-//                   Row(
-//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                     children: [
-//                       const Text('Auratech Academy',
-//                           style: TextStyle(
-//                             fontWeight: FontWeight.w800,
-//                             fontSize: 18,
-//                             color: AppColors.textPrimary,
-//                           )),
-//                       Container(
-//                         padding: const EdgeInsets.symmetric(
-//                             horizontal: 10, vertical: 6),
-//                         decoration: BoxDecoration(
-//                           color: AppColors.primary.withOpacity(.08),
-//                           borderRadius: BorderRadius.circular(24),
-//                         ),
-//                         child: const Text('Verified Certificate',
-//                             style: TextStyle(
-//                               color: AppColors.primary,
-//                               fontWeight: FontWeight.w600,
-//                             )),
-//                       )
-//                     ],
-//                   ),
-//                   if (priceText.isNotEmpty) ...[
-//                     const SizedBox(height: 6),
-//                     Text(priceText,
-//                         style: const TextStyle(color: AppColors.textSecondary)),
-//                   ],
-//
-//                   const SizedBox(height: 12),
-//
-//                   // live preview (vector UI, not a network image)
-//                   AspectRatio(
-//                     aspectRatio: 6 / 7,
-//                     child: _CertificatePreview(
-//                       userName: userName,
-//                       courseTitle: courseTitle,
-//                       completedOn: dateStr,
-//                     ),
-//                   ),
-//
-//                   const SizedBox(height: 14),
-//
-//                   Row(
-//                     children: [
-//                       Expanded(
-//                         child: ElevatedButton.icon(
-//                           icon: const Icon(Icons.picture_as_pdf_rounded),
-//                           style: ElevatedButton.styleFrom(
-//                             backgroundColor: AppColors.primary,
-//                             foregroundColor: Colors.white,
-//                             elevation: 0,
-//                             shape: RoundedRectangleBorder(
-//                                 borderRadius: BorderRadius.circular(12)),
-//                           ),
-//                           onPressed: () => _downloadPdf(context),
-//                           label: const Text(
-//                             'Download PDF',
-//                             style: TextStyle(fontSize: 12.5),
-//                           ),
-//                         ),
-//                       ),
-//                       const SizedBox(width: 12),
-//                       Expanded(
-//                         child: OutlinedButton.icon(
-//                           icon: const Icon(Icons.share_rounded),
-//                           style: OutlinedButton.styleFrom(
-//                             side: const BorderSide(color: AppColors.primary),
-//                             foregroundColor: AppColors.primary,
-//                             shape: RoundedRectangleBorder(
-//                                 borderRadius: BorderRadius.circular(12)),
-//                           ),
-//                           onPressed: () => _sharePdf(context),
-//                           label: const Text('Share'),
-//                         ),
-//                       ),
-//                     ],
-//                   )
-//                 ],
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   // ---------------------- PDF GEN ----------------------
-//   Future<pw.Document> _buildPdf() async {
-//     final pdf = pw.Document();
-//
-//     final dateStr = DateFormat.yMMMMd().format(completedOn);
-//
-//     final primary = const PdfColor.fromInt(0xFF2962FF); // tweak to your theme
-//     final textPrimary = const PdfColor.fromInt(0xFF111827);
-//     final textSecondary = const PdfColor.fromInt(0xFF6B7280);
-//     final border = const PdfColor.fromInt(0xFFE5E7EB);
-//
-//     pdf.addPage(
-//       pw.Page(
-//         pageFormat: PdfPageFormat.a4.landscape,
-//         margin: const pw.EdgeInsets.all(24),
-//         build: (context) => pw.Container(
-//           decoration: pw.BoxDecoration(
-//             border: pw.Border.all(color: border, width: 2),
-//           ),
-//           child: pw.Stack(
-//             children: [
-//               // subtle watermark
-//               pw.Positioned.fill(
-//                 child: pw.Center(
-//                   child: pw.Transform.rotate(
-//                     angle: -0.35,
-//                     child: pw.Text(
-//                       'AURATECH ACADEMY',
-//                       style: pw.TextStyle(
-//                         color: primary,
-//                         fontSize: 60,
-//                         fontWeight: pw.FontWeight.bold,
-//                         letterSpacing: 2,
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//
-//               pw.Padding(
-//                 padding: const pw.EdgeInsets.all(28),
-//                 child: pw.Column(
-//                   crossAxisAlignment: pw.CrossAxisAlignment.start,
-//                   children: [
-//                     // header row
-//                     pw.Row(
-//                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-//                       crossAxisAlignment: pw.CrossAxisAlignment.center,
-//                       children: [
-//                         pw.Text('Auratech Academy',
-//                             style: pw.TextStyle(
-//                               color: textPrimary,
-//                               fontWeight: pw.FontWeight.bold,
-//                               fontSize: 20,
-//                             )),
-//                         pw.Container(
-//                           padding: const pw.EdgeInsets.symmetric(
-//                               horizontal: 12, vertical: 6),
-//                           decoration: pw.BoxDecoration(
-//                             color: primary,
-//                             borderRadius: pw.BorderRadius.circular(16),
-//                           ),
-//                           child: pw.Text('Verified Certificate',
-//                               style: pw.TextStyle(
-//                                 color: primary,
-//                                 fontWeight: pw.FontWeight.bold,
-//                               )),
-//                         ),
-//                       ],
-//                     ),
-//                     pw.SizedBox(height: 24),
-//
-//                     // title block
-//                     pw.Text('CERTIFICATE',
-//                         style: pw.TextStyle(
-//                           fontSize: 38,
-//                           letterSpacing: 2,
-//                           color: textPrimary,
-//                           fontWeight: pw.FontWeight.bold,
-//                         )),
-//                     pw.SizedBox(height: 4),
-//                     pw.Text('OF COMPLETION',
-//                         style: pw.TextStyle(
-//                           fontSize: 16,
-//                           letterSpacing: 3,
-//                           color: textSecondary,
-//                         )),
-//                     pw.SizedBox(height: 28),
-//
-//                     pw.Text('Presented to',
-//                         style: pw.TextStyle(
-//                           color: textSecondary,
-//                           fontSize: 12,
-//                         )),
-//                     pw.SizedBox(height: 4),
-//                     pw.Text(userName,
-//                         style: pw.TextStyle(
-//                           color: textPrimary,
-//                           fontSize: 28,
-//                           fontWeight: pw.FontWeight.bold,
-//                         )),
-//                     pw.SizedBox(height: 14),
-//
-//                     pw.Text(
-//                       'For successfully completing the online course',
-//                       style: pw.TextStyle(color: textSecondary, fontSize: 12),
-//                     ),
-//                     pw.SizedBox(height: 6),
-//
-//                     pw.Text(
-//                       courseTitle,
-//                       style: pw.TextStyle(
-//                         color: textPrimary,
-//                         fontSize: 18,
-//                         fontWeight: pw.FontWeight.bold,
-//                       ),
-//                     ),
-//                     pw.SizedBox(height: 8),
-//                     pw.Text('Course completed on $dateStr',
-//                         style:
-//                             pw.TextStyle(color: textSecondary, fontSize: 12)),
-//                     pw.Spacer(),
-//
-//                     // footer row
-//                     pw.Row(
-//                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-//                       children: [
-//                         pw.Column(
-//                           crossAxisAlignment: pw.CrossAxisAlignment.start,
-//                           children: [
-//                             pw.Container(height: 1, width: 200, color: border),
-//                             pw.SizedBox(height: 4),
-//                             pw.Text('Harish Subramanian',
-//                                 style: pw.TextStyle(
-//                                     color: textPrimary,
-//                                     fontWeight: pw.FontWeight.bold)),
-//                             pw.Text('Academic Director, Auratech Academy',
-//                                 style: pw.TextStyle(
-//                                     color: textSecondary, fontSize: 10)),
-//                           ],
-//                         ),
-//                         pw.Column(
-//                           crossAxisAlignment: pw.CrossAxisAlignment.end,
-//                           children: [
-//                             pw.Text('Verify Authenticity',
-//                                 style: pw.TextStyle(
-//                                   color: textSecondary,
-//                                   fontSize: 10,
-//                                 )),
-//                             pw.SizedBox(height: 4),
-//                             pw.BarcodeWidget(
-//                               data:
-//                                   'AURATECH|$userName|$courseTitle|$dateStr', // simple verifiable payload
-//                               barcode: pw.Barcode.qrCode(),
-//                               width: 64,
-//                               height: 64,
-//                             ),
-//                           ],
-//                         ),
-//                       ],
-//                     )
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//
-//     return pdf;
-//   }
-//
-//   Future<void> _downloadPdf(BuildContext context) async {
-//     final doc = await _buildPdf();
-//     await Printing.layoutPdf(onLayout: (_) => doc.save());
-//   }
-//
-//   Future<void> _sharePdf(BuildContext context) async {
-//     final doc = await _buildPdf();
-//     await Printing.sharePdf(
-//       bytes: await doc.save(),
-//       filename: 'Auratech_Certificate_$userName.pdf',
-//     );
-//   }
-// }
-//
-// class _CertificatePreview extends StatelessWidget {
-//   final String userName;
-//   final String courseTitle;
-//   final String completedOn;
-//
-//   const _CertificatePreview({
-//     required this.userName,
-//     required this.courseTitle,
-//     required this.completedOn,
-//   });
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       decoration: BoxDecoration(
-//         color: Colors.white,
-//         border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
-//         borderRadius: BorderRadius.circular(12),
-//       ),
-//       child: Stack(
-//         fit: StackFit.expand,
-//         children: [
-//           // watermark
-//           Center(
-//             child: Transform.rotate(
-//               angle: -0.35,
-//               child: Text(
-//                 'AURATECH ACADEMY',
-//                 style: TextStyle(
-//                   color: AppColors.primary.withOpacity(0.05),
-//                   fontSize: 40,
-//                   fontWeight: FontWeight.w800,
-//                   letterSpacing: 2,
-//                 ),
-//               ),
-//             ),
-//           ),
-//           Padding(
-//             padding: const EdgeInsets.all(18),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 // header row
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                   children: [
-//                     const Text('Auratech Academy',
-//                         style: TextStyle(
-//                           fontWeight: FontWeight.w600,
-//                           fontSize: 14,
-//                           color: AppColors.textPrimary,
-//                         )),
-//                     Container(
-//                       padding: const EdgeInsets.symmetric(
-//                           horizontal: 10, vertical: 6),
-//                       decoration: BoxDecoration(
-//                         color: AppColors.primary.withOpacity(.08),
-//                         borderRadius: BorderRadius.circular(16),
-//                       ),
-//                       child: const Text(
-//                         'Verified Certificate',
-//                         style: TextStyle(
-//                           color: AppColors.primary,
-//                           fontWeight: FontWeight.w600,
-//                         ),
-//                       ),
-//                     )
-//                   ],
-//                 ),
-//                 const SizedBox(height: 14),
-//                 const Text(
-//                   'CERTIFICATE',
-//                   style: TextStyle(
-//                     fontSize: 28,
-//                     letterSpacing: 2,
-//                     fontWeight: FontWeight.w800,
-//                     color: AppColors.textPrimary,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 2),
-//                 const Text(
-//                   'OF COMPLETION',
-//                   style: TextStyle(
-//                     fontSize: 12,
-//                     letterSpacing: 3,
-//                     color: AppColors.textSecondary,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 18),
-//
-//                 const Text('Presented to',
-//                     style: TextStyle(
-//                         color: AppColors.textSecondary, fontSize: 12)),
-//                 const SizedBox(height: 4),
-//                 Text(
-//                   userName,
-//                   style: const TextStyle(
-//                     color: AppColors.textPrimary,
-//                     fontSize: 22,
-//                     fontWeight: FontWeight.w800,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 8),
-//                 const Text(
-//                   'For successfully completing the online course',
-//                   style:
-//                       TextStyle(color: AppColors.textSecondary, fontSize: 12),
-//                 ),
-//                 const SizedBox(height: 4),
-//                 Text(courseTitle,
-//                     style: const TextStyle(
-//                         color: AppColors.textPrimary,
-//                         fontWeight: FontWeight.w700,
-//                         fontSize: 14)),
-//                 const SizedBox(height: 4),
-//                 Text('Course completed on $completedOn',
-//                     style: const TextStyle(
-//                         color: AppColors.textSecondary, fontSize: 12)),
-//                 const Spacer(),
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                   children: [
-//                     Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: const [
-//                         SizedBox(
-//                           height: 1,
-//                           width: 160,
-//                           child: DecoratedBox(
-//                             decoration: BoxDecoration(color: Color(0xFFE5E7EB)),
-//                           ),
-//                         ),
-//                         SizedBox(height: 4),
-//                         Text('Sona Sharma',
-//                             style: TextStyle(
-//                                 color: AppColors.textPrimary,
-//                                 fontWeight: FontWeight.w700,
-//                                 fontSize: 12)),
-//                         Text('Academic Director, Auratech Academy',
-//                             style: TextStyle(
-//                                 color: AppColors.textSecondary, fontSize: 10)),
-//                       ],
-//                     ),
-//                     Column(
-//                       crossAxisAlignment: CrossAxisAlignment.end,
-//                       children: const [
-//                         Text('Verify Authenticity',
-//                             style: TextStyle(
-//                                 color: AppColors.textSecondary, fontSize: 10)),
-//                         SizedBox(height: 6),
-//                         Icon(Icons.qr_code_2_rounded,
-//                             size: 40, color: AppColors.textSecondary),
-//                       ],
-//                     ),
-//                   ],
-//                 )
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
+class UserNote {
+  final String moduleTitle;   // e.g. "Introduction"
+  final String chapterTitle;  // e.g. "What is Flutter?"
+  final String content;       // actual note text
+  final DateTime createdAt;
+
+  UserNote({
+    required this.moduleTitle,
+    required this.chapterTitle,
+    required this.content,
+    required this.createdAt,
+  });
+}
+class _NotesTab extends StatelessWidget {
+  final List<UserNote> userNotes;
+
+  const _NotesTab({required this.userNotes});
+
+  @override
+  Widget build(BuildContext context) {
+    if (userNotes.isEmpty) {
+      return const _InfoPlaceholder(
+        title: 'Notes',
+        message:
+        'You haven\'t added any notes yet. Start learning and save key points here. ✍️',
+      );
+    }
+
+    // Group notes by moduleTitle
+    final Map<String, List<UserNote>> byModule = {};
+    for (final note in userNotes) {
+      byModule.putIfAbsent(note.moduleTitle, () => []).add(note);
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(0),
+      itemCount: byModule.length,
+      itemBuilder: (context, index) {
+        final moduleTitle = byModule.keys.elementAt(index);
+        final notes = byModule[moduleTitle]!;
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          color: AppColors.background,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(color: AppColors.border),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  moduleTitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                ...notes.map(
+                      (n) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          n.chapterTitle,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          n.content,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            height: 1.4,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+
+
+class _RelatedCoursesTab extends StatelessWidget {
+  final List<CourseMaster> courses;
+  final void Function(CourseMaster)? onOpenCourse;
+
+  const _RelatedCoursesTab({
+    required this.courses,
+    this.onOpenCourse,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (courses.isEmpty) {
+      return const _InfoPlaceholder(
+        title: 'Related Courses',
+        message:
+        'We’ll recommend related courses based on your interests and progress.',
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(0),
+      itemCount: courses.length,
+      itemBuilder: (_, index) {
+        final c = courses[index];
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          elevation: 0,
+          color: AppColors.background,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(color: AppColors.border),
+          ),
+          child: ListTile(
+            onTap: onOpenCourse != null ? () => onOpenCourse!(c) : null,
+            leading: CircleAvatar(
+              backgroundColor: AppColors.background,
+              backgroundImage: c.courseThumbImage.isNotEmpty
+                  ? NetworkImage(c.courseThumbImage)
+                  : null,
+              child: c.courseThumbImage.isEmpty
+                  ? const Icon(Icons.play_circle_fill_rounded,
+                  color: AppColors.primary)
+                  : null,
+            ),
+            title: Text(
+              c.courseTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              c.description ?? '',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            trailing: const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}

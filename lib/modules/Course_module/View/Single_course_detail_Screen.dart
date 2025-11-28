@@ -771,15 +771,37 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                       const SizedBox(width: 16),
                       widget.course.is_enroll
                           ? ElevatedButton(
-                              onPressed: () => Get.to(CourseDetailPage(
-                                course: widget.course,
-                              )),
-                              style: ElevatedButton.styleFrom(
-                                fixedSize: Size(165, 46),
-                              ),
-                              child: Text("Start Course"),
-                            )
+                        onPressed: () {
+                          Get.to(
+                            CourseDetailPage(
+                              course: widget.course,
+
+                              // 🔹 Pass the related courses here
+                              // relatedCourses:  widget.course.where((c) => c.id != widget.course.id)
+                              //     .toList(),
+                              relatedCourses: [],
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          fixedSize: const Size(165, 46),
+                        ),
+                        child: const Text("Start Course"),
+                      )
                           : const SizedBox.shrink(),
+
+                      // widget.course.is_enroll
+                      //     ? ElevatedButton(
+                      //         onPressed: () => Get.to(CourseDetailPage(
+                      //           course: widget.course,
+                      //         )
+                      //         ),
+                      //         style: ElevatedButton.styleFrom(
+                      //           fixedSize: Size(165, 46),
+                      //         ),
+                      //         child: Text("Start Course"),
+                      //       )
+                      //     : const SizedBox.shrink(),
                     ],
                   )
                 : ElevatedButton(
