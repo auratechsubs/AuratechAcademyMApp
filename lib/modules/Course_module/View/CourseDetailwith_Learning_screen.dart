@@ -9,21 +9,21 @@ import 'package:video_player/video_player.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
-
 import '../../../constant/constant_colors.dart';
+import '../../../utils/storageservice.dart';
 import '../Controller/Learning_Module_Controller.dart';
 import '../Model/Course_Master_Model.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
-
 import '../Model/Learning_Module_Model.dart';
+import 'Single_course_detail_Screen.dart';
 
 class CourseDetailPage extends StatefulWidget {
   final CourseMaster course;
-  final List<CourseMaster> relatedCourses;   // NEW
-  final List<UserNote> userNotes;            // NEW (agar yahi se pass karna hai)
+  final List<CourseMaster> relatedCourses; // NEW
+  final List<UserNote> userNotes;
   const CourseDetailPage({
     super.key,
     required this.course,
@@ -146,6 +146,26 @@ class _CourseDetailPageState extends State<CourseDetailPage>
     }).toList();
   }
 
+  List<UserNote> _buildUserNotesFromNotesModules(List<NotesModule> modules) {
+    final List<UserNote> list = [];
+
+    for (final m in modules) {
+      for (final pdf in m.notes) {
+        list.add(
+          UserNote(
+            moduleTitle: m.title,
+            chapterTitle: pdf.title, // agar chapter name alag hai to waha se lo
+            pdfTitle: pdf.title,
+            pdfUrl: pdf.url,
+            createdAt: DateTime.now(), // ya API se aane wala date
+          ),
+        );
+      }
+    }
+
+    return list;
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = widget.course;
@@ -171,6 +191,8 @@ class _CourseDetailPageState extends State<CourseDetailPage>
         final totalVideos = learningCtrl.videoItems.length;
         final totalAssessments = allQuizzes.length;
         final totalResources = learningCtrl.pdfItems.length;
+
+        final userNotes = _buildUserNotesFromNotesModules(notesModules);
 
         if (isLoading && videos.isEmpty) {
           return const Center(child: CircularProgressIndicator());
@@ -292,6 +314,7 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                       );
                     },
                     onOpenCertificate: () {
+                      final userName = StorageService.getData("name");
                       final learningCtrl =
                           Get.find<Learning_Module_Controller>();
 
@@ -310,27 +333,23 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                         MaterialPageRoute(
                           builder: (_) => CertificatePage(
                             courseTitle: c.courseTitle,
-                            userName: 'Sohil Khan',
+                            userName: userName ?? 'Student',
                             completedOn: DateTime.now(),
                             priceText: '₹349 (Inc. GST)',
-                            quizScores: learningCtrl.quizScores
-                                .toList(), // ✅ score list pass
+                            quizScores: learningCtrl.quizScores.toList(),
                           ),
                         ),
                       );
                     },
-                    userNotes: widget.userNotes,
+                    userNotes: userNotes,
                     relatedCourses: widget.relatedCourses,
                     onOpenRelatedCourse: (course) {
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CourseDetailPage(
-                            course: course,
-                            relatedCourses: widget.relatedCourses, // ya nayi list
-                          ),
-                        ),
-                      );
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => CourseDetailScreen(
+                                    course: course,
+                                  )));
                     },
                   ),
                   const SizedBox(height: 50),
@@ -1109,8 +1128,10 @@ class CertificatePage extends StatelessWidget {
                                     ),
                                     pw.BarcodeWidget(
                                       data:
-                                          'AURATECH|$userName|$courseTitle|$dateStr',
-                                      barcode: pw.Barcode.qrCode(),
+                                          'https://api.auratechacademy.com/media/certificate/Auratech_Certificate_Sohil_Khan.pdf',
+                                      barcode: pw.Barcode.qrCode(
+                                        typeNumber: 10,
+                                      ),
                                       width: 60,
                                       height: 60,
                                     ),
@@ -1728,10 +1749,8 @@ class _LearningVideosPageState extends State<LearningVideosPage> {
   late List<List<bool>> _videoCompleted;
   late List<List<bool>> _quizUnlocked;
   late List<List<bool>> _quizCompleted;
-  List<int> _scores = [];
+  final List<int> _scores = [];
   final Learning_Module_Controller learningCtrl = Get.find();
-
-
 
   bool get allQuizzesCompleted {
     final total = learningCtrl.totalQuizLessons;
@@ -1747,8 +1766,6 @@ class _LearningVideosPageState extends State<LearningVideosPage> {
     _videoCompleted = [];
     _quizUnlocked = [];
     _quizCompleted = [];
-
-
 
     for (int mi = 0; mi < mCount; mi++) {
       final lCount = widget.modules[mi].lessons.length;
@@ -1767,8 +1784,6 @@ class _LearningVideosPageState extends State<LearningVideosPage> {
           _videoCompleted[mi][li] = true;
         }
       }
-
-
     }
 
     // 🔓 by default: Module 0, Lesson 0 unlocked + auto-load
@@ -1980,8 +1995,6 @@ class _LearningVideosPageState extends State<LearningVideosPage> {
                             final bool isUnlocked =
                                 _videoUnlocked[moduleIndex][lessonIndex];
 
-                            //final bool isDone = _videoCompleted[moduleIndex][lessonIndex];
-                           // final lesson = module.lessons[lessonIndex];
                             final videoId = lesson.videoId ?? -1;
 
                             final bool isDone =
@@ -2158,12 +2171,14 @@ class _LearningVideosPageState extends State<LearningVideosPage> {
                                             }
                                           : null,
                                       icon: Icon(
-                                        learningCtrl.isLessonQuizCompleted(lesson.videoId ?? -1)
+                                        learningCtrl.isLessonQuizCompleted(
+                                                lesson.videoId ?? -1)
                                             ? Icons.check_circle_rounded
                                             : Icons.quiz_rounded,
                                       ),
                                       label: Text(
-                                        learningCtrl.isLessonQuizCompleted(lesson.videoId ?? -1)
+                                        learningCtrl.isLessonQuizCompleted(
+                                                lesson.videoId ?? -1)
                                             ? "Quiz Completed"
                                             : "Start Quiz",
                                       ),
@@ -2546,7 +2561,7 @@ class _QuizPageState extends State<QuizPage> {
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop(); // dialog close
-              _resetQuiz();                      // same quiz dobara chalu
+              _resetQuiz(); // same quiz dobara chalu
             },
             child: const Text('Retry Quiz'),
           ),
@@ -2554,9 +2569,9 @@ class _QuizPageState extends State<QuizPage> {
           // ✅ Close: dialog close + QuizPage pop with score
           TextButton(
             onPressed: () {
-              Navigator.of(dialogContext).pop();     // dialog close
-              Navigator.of(context).pop(_score);     // 🔥 QuizPage pop WITH result
-              widget.onCompleted?.call();            // optional callback
+              Navigator.of(dialogContext).pop(); // dialog close
+              Navigator.of(context).pop(_score); // 🔥 QuizPage pop WITH result
+              widget.onCompleted?.call(); // optional callback
             },
             child: const Text('Close'),
           ),
@@ -2726,18 +2741,21 @@ class _QuizPageState extends State<QuizPage> {
 }
 
 class UserNote {
-  final String moduleTitle;   // e.g. "Introduction"
-  final String chapterTitle;  // e.g. "What is Flutter?"
-  final String content;       // actual note text
+  final String moduleTitle;
+  final String chapterTitle;
+  final String pdfTitle;
+  final String pdfUrl;
   final DateTime createdAt;
 
   UserNote({
     required this.moduleTitle,
     required this.chapterTitle,
-    required this.content,
+    required this.pdfTitle,
+    required this.pdfUrl,
     required this.createdAt,
   });
 }
+
 class _NotesTab extends StatelessWidget {
   final List<UserNote> userNotes;
 
@@ -2749,11 +2767,11 @@ class _NotesTab extends StatelessWidget {
       return const _InfoPlaceholder(
         title: 'Notes',
         message:
-        'You haven\'t added any notes yet. Start learning and save key points here. ✍️',
+            'You haven\'t added any notes yet. Start learning and save key points here. ✍️',
       );
     }
 
-    // Group notes by moduleTitle
+    // 1️⃣ Group by moduleTitle
     final Map<String, List<UserNote>> byModule = {};
     for (final note in userNotes) {
       byModule.putIfAbsent(note.moduleTitle, () => []).add(note);
@@ -2779,6 +2797,7 @@ class _NotesTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 🔹 Module title
                 Text(
                   moduleTitle,
                   style: const TextStyle(
@@ -2787,31 +2806,56 @@ class _NotesTab extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
+
                 ...notes.map(
-                      (n) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          n.chapterTitle,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                          ),
+                  (n) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: const CircleAvatar(
+                        radius: 16,
+                        backgroundColor: AppColors.background,
+                        child: Icon(
+                          Icons.picture_as_pdf_rounded,
+                          size: 18,
+                          color: AppColors.primary,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          n.content,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            height: 1.4,
-                            color: AppColors.textSecondary,
-                          ),
+                      ),
+                      title: Text(
+                        n.chapterTitle, // chapter name
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          color: AppColors.textPrimary,
                         ),
-                      ],
+                      ),
+                      subtitle: Text(
+                        n.pdfTitle, // PDF file / note title
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      trailing: const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppColors.textSecondary,
+                        size: 18,
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PdfWebViewPage(
+                              title: n.pdfTitle,
+                              url: n.pdfUrl,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -2824,8 +2868,6 @@ class _NotesTab extends StatelessWidget {
   }
 }
 
-
-
 class _RelatedCoursesTab extends StatelessWidget {
   final List<CourseMaster> courses;
   final void Function(CourseMaster)? onOpenCourse;
@@ -2834,14 +2876,14 @@ class _RelatedCoursesTab extends StatelessWidget {
     required this.courses,
     this.onOpenCourse,
   });
-
+  final baseUrl = "https://api.auratechacademy.com";
   @override
   Widget build(BuildContext context) {
     if (courses.isEmpty) {
       return const _InfoPlaceholder(
         title: 'Related Courses',
         message:
-        'We’ll recommend related courses based on your interests and progress.',
+            'We’ll recommend related courses based on your interests and progress.',
       );
     }
 
@@ -2864,16 +2906,18 @@ class _RelatedCoursesTab extends StatelessWidget {
             leading: CircleAvatar(
               backgroundColor: AppColors.background,
               backgroundImage: c.courseThumbImage.isNotEmpty
-                  ? NetworkImage(c.courseThumbImage)
+                  ? NetworkImage(
+                      "$baseUrl${c.courseThumbImage}",
+                    )
                   : null,
               child: c.courseThumbImage.isEmpty
                   ? const Icon(Icons.play_circle_fill_rounded,
-                  color: AppColors.primary)
+                      color: AppColors.primary)
                   : null,
             ),
             title: Text(
               c.courseTitle,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
@@ -2881,7 +2925,7 @@ class _RelatedCoursesTab extends StatelessWidget {
               ),
             ),
             subtitle: Text(
-              c.description ?? '',
+              c.language ?? '',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(

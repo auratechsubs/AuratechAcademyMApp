@@ -8,6 +8,7 @@ import '../../../constant/constant_colors.dart';
 import '../../../widget/custombottombar.dart';
 import '../../My_course_module/Controller/Add_To_Cart.dart';
 import '../Controller/Course_review_Controller.dart';
+import '../Controller/Popular_course_controller.dart';
 import '../Controller/getReviewController.dart';
 import '../Model/Course_Master_Model.dart';
 import 'CourseDetailwith_Learning_screen.dart';
@@ -30,6 +31,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
   final _messageController = TextEditingController();
   final getReviewController _getReviewController = Get.find();
   final PostReviewController postReviewController = Get.find();
+  final PopularCourseController popularCourseController = Get.find();
 
   bool isExpanded = false;
   Future<void> getcoursereview() async {
@@ -771,37 +773,22 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                       const SizedBox(width: 16),
                       widget.course.is_enroll
                           ? ElevatedButton(
-                        onPressed: () {
-                          Get.to(
-                            CourseDetailPage(
-                              course: widget.course,
+                              onPressed: () {
+                                Get.to(
+                                  CourseDetailPage(
+                                    course: widget.course,
 
-                              // 🔹 Pass the related courses here
-                              // relatedCourses:  widget.course.where((c) => c.id != widget.course.id)
-                              //     .toList(),
-                              relatedCourses: [],
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          fixedSize: const Size(165, 46),
-                        ),
-                        child: const Text("Start Course"),
-                      )
+                                    relatedCourses: popularCourseController.courseList
+                                        .where((c) => c.id != widget.course.id)
+                                        .toList(),                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                fixedSize: const Size(165, 46),
+                              ),
+                              child: const Text("Start Course"),
+                            )
                           : const SizedBox.shrink(),
-
-                      // widget.course.is_enroll
-                      //     ? ElevatedButton(
-                      //         onPressed: () => Get.to(CourseDetailPage(
-                      //           course: widget.course,
-                      //         )
-                      //         ),
-                      //         style: ElevatedButton.styleFrom(
-                      //           fixedSize: Size(165, 46),
-                      //         ),
-                      //         child: Text("Start Course"),
-                      //       )
-                      //     : const SizedBox.shrink(),
                     ],
                   )
                 : ElevatedButton(

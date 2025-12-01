@@ -41,7 +41,6 @@ class AppBindings extends Bindings {
     Get.lazyPut<SimpleLoginController>(() => SimpleLoginController(),
         fenix: true);
 
-
     // Home/Intro
     Get.lazyPut<Homescreen_Controller>(() => Homescreen_Controller(),
         fenix: true);
@@ -50,12 +49,18 @@ class AppBindings extends Bindings {
     Get.lazyPut<GalleryMasterController>(() => GalleryMasterController(),
         fenix: true);
     Get.lazyPut<BlogController>(() => BlogController(), fenix: true);
-    Get.lazyPut<CourseSegmentController>(() => CourseSegmentController(), fenix: true);
-    Get.lazyPut<FlashBannerController>(() => FlashBannerController(), fenix: true);
-    Get.lazyPut<SuccessStoryController>(() => SuccessStoryController(), fenix: true);
+    Get.lazyPut<CourseSegmentController>(() => CourseSegmentController(),
+        fenix: true);
+    Get.lazyPut<FlashBannerController>(() => FlashBannerController(),
+        fenix: true);
+    Get.lazyPut<SuccessStoryController>(() => SuccessStoryController(),
+        fenix: true);
     Get.lazyPut<WebinarController>(() => WebinarController(), fenix: true);
-    Get.lazyPut<CourseSegmantMasterController>(() => CourseSegmantMasterController(), fenix: true);
-    Get.lazyPut<Learning_Module_Controller>(() => Learning_Module_Controller(), fenix: true);
+    Get.lazyPut<CourseSegmantMasterController>(
+        () => CourseSegmantMasterController(),
+        fenix: true);
+    Get.lazyPut<Learning_Module_Controller>(() => Learning_Module_Controller(),
+        fenix: true);
 
     // Category & Courses
     Get.lazyPut<Category_Controller>(() => Category_Controller(), fenix: true);
@@ -82,7 +87,6 @@ class AppBindings extends Bindings {
 
     // Settings/FAQ
     Get.lazyPut<FaqController>(() => FaqController(), fenix: true);
-   // Get.lazyPut(LocalizationController(), permanent: true);
-
+    // Get.lazyPut(LocalizationController(), permanent: true);
   }
 }
