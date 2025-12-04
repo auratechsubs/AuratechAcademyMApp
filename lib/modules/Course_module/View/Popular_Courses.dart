@@ -38,7 +38,7 @@ class PopularCoursesScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => CourseDetailScreen(course: course),
+                    builder: (_) => CourseDetailScreen(course: course, slug: course.slug,),
                   ),
                 );
               },

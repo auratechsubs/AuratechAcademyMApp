@@ -3,6 +3,7 @@ import 'package:auratech_academy/widget/custombottombar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../constant/constant_colors.dart';
+import '../../../utils/logx.dart';
 import '../../../utils/util_klass.dart';
 import '../../Payment_module/View/Chekout_Screen.dart';
 import '../Controller/Get_To_Cart.dart';
@@ -27,6 +28,7 @@ class _MyCoursesState extends State<MyCourses> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       getCartItem.fetchCartItems(StorageService.getData("User_id"));
     });
+    LogX.printLog("User ID: ${StorageService.getData("User_id")}");
   }
 
   @override

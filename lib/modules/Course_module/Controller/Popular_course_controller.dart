@@ -45,10 +45,7 @@ class PopularCourseController extends GetxController {
     }
   }
 
-
-
-  final ApiService _api =
-      ApiService(baseUrl: 'https://api.auratechacademy.com');
+  final ApiService _api = ApiService(baseUrl: 'https://api.auratechacademy.com');
   Future<void> fetchCourseMasters() async {
     isLoading.value = true;
     errorMessage.value = '';
@@ -71,4 +68,5 @@ class PopularCourseController extends GetxController {
       isLoading.value = false;
     }
   }
+
 }

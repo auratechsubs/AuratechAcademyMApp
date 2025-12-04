@@ -660,7 +660,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (_) =>
-                                          CourseDetailScreen(course: course),
+                                          CourseDetailScreen(course: course, slug: course.slug,),
                                     ),
                                   );
                                 },
@@ -768,7 +768,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) =>
-                                        CourseDetailScreen(course: course),
+                                        CourseDetailScreen(course: course, slug: course.slug,),
                                   ),
                                 );
                               },

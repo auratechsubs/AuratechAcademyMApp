@@ -165,27 +165,6 @@ class CartData {
     this.updateUser,
   });
 
-  // factory CartData.fromJson(Map<String, dynamic> json) {
-  //   num? num(dynamic v) => v is num ? v : (v is String ? num.tryParse(v) : null);
-  //
-  //   return CartData(
-  //     id: (json['id'] as num?)?.toInt(),
-  //     quantity: (json['quantity'] as num?)?.toInt(),
-  //     user: (json['user'] is Map<String, dynamic>)
-  //         ? User.fromJson(json['user'] as Map<String, dynamic>)
-  //         : null,
-  //     createDate: json['create_date']?.toString(),
-  //     updateDate: json['update_date']?.toString(),
-  //     recordStatus: json['record_status']?.toString(),
-  //     courseImg: json['course_img']?.toString(),
-  //     courseName: json['course_name']?.toString(),
-  //     coursePrice: num(json['course_price'])?.toDouble(),
-  //     totalPrice: num(json['total_price'])?.toDouble(),
-  //     slug: json['slug']?.toString(),
-  //     createUser: json['create_user'],
-  //     updateUser: json['update_user'],
-  //   );
-  // }
 
 
   factory CartData.fromJson(Map<String, dynamic> json) {

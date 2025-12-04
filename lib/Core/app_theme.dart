@@ -40,7 +40,7 @@ class AppTheme {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
-      splashFactory: InkRipple.splashFactory, // smooth, native ripple
+      splashFactory: InkRipple.splashFactory,
       visualDensity: VisualDensity.adaptivePlatformDensity,
     );
   }

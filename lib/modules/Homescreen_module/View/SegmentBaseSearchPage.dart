@@ -356,6 +356,7 @@ class _SegmentbasesearchpageState extends State<Segmentbasesearchpage> {
                   context,
                   MaterialPageRoute(
                       builder: (_) => CourseDetailScreen(
+                            slug: _courseCtrl.courses[index].slug,
                             course: _courseCtrl.courses[index],
                           )));
             },

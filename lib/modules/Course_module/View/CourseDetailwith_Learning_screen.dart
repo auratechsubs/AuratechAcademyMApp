@@ -348,7 +348,7 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                           context,
                           MaterialPageRoute(
                               builder: (_) => CourseDetailScreen(
-                                    course: course,
+                                    course: course, slug: course.slug,
                                   )));
                     },
                   ),

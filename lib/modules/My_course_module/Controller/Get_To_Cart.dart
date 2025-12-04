@@ -16,7 +16,7 @@ class GetCartItem extends GetxController {
     errorMessage.value = '';
 
     try {
-      final  Data = await _api.getList<CartItem>(
+      final Data = await _api.getList<CartItem>(
         "/add_to_cart/?user_id=$userId",
         (json) {
           return CartItem.fromJson(json);
@@ -44,5 +44,4 @@ class GetCartItem extends GetxController {
     coursecartList.removeWhere((item) => item.id == cartId);
     coursecartList.refresh();
   }
-
 }

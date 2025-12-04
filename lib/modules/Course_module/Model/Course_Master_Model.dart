@@ -1,8 +1,4 @@
 
-
-
-
-
 class CourseMasterResponse {
   final String message;
   final List<CourseMaster> data;
