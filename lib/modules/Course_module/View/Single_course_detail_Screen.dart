@@ -1662,7 +1662,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
               singleCourseController.singleCourse.value ?? widget.course;
 
 
-          return Padding(
+          return
+            Padding(
             padding: EdgeInsets.symmetric(
               horizontal: isTablet ? 24 : 16,
               vertical: isTablet ? 16 : 12,
@@ -1674,7 +1675,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                   final isBusy = addToCart.isLoading.value;
 
                   return Expanded(
-                    child: ElevatedButton(
+                    child: !course.is_enroll ?
+                    ElevatedButton(
                       onPressed: isBusy
                           ? null
                           : () async {
@@ -1719,7 +1721,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                           ),
                         ),
                       )
-                          : Row(
+                          :  Row(
                         mainAxisAlignment:
                         MainAxisAlignment.center,
                         children: [
@@ -1739,31 +1741,49 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                           ),
                         ],
                       ),
+                    ) : ElevatedButton(
+                      onPressed: () {
+                        Get.to(
+                          CourseDetailPage(
+                            course: course,
+                            relatedCourses:
+                            popularCourseController
+                                .courseList
+                                .where((c) =>
+                            c.id != course.id)
+                                .toList(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        fixedSize: const Size(165, 46),
+                      ),
+                      child: const Text("Start Course"),
                     ),
                   );
                 }),
-                const SizedBox(width: 16),
-                course.is_enroll
-                    ? ElevatedButton(
-                  onPressed: () {
-                    Get.to(
-                      CourseDetailPage(
-                        course: course,
-                        relatedCourses:
-                        popularCourseController
-                            .courseList
-                            .where((c) =>
-                        c.id != course.id)
-                            .toList(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size(165, 46),
-                  ),
-                  child: const Text("Start Course"),
-                )
-                    : const SizedBox.shrink(),
+                // const SizedBox(width: 16),
+                // course.is_enroll
+                //     ? ElevatedButton(
+                //   onPressed: () {
+                //     Get.to(
+                //       CourseDetailPage(
+                //         course: course,
+                //         relatedCourses:
+                //         popularCourseController
+                //             .courseList
+                //             .where((c) =>
+                //         c.id != course.id)
+                //             .toList(),
+                //       ),
+                //     );
+                //   },
+                //   style: ElevatedButton.styleFrom(
+                //     fixedSize: const Size(165, 46),
+                //   ),
+                //   child: const Text("Start Course"),
+                // )
+                //     : const SizedBox.shrink(),
               ],
             )
                 : ElevatedButton(

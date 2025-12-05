@@ -473,8 +473,7 @@ class ChekoutController extends GetxController {
   // =======================================================================
 
   /// Create order on server using POST (order_master/)
-  /// Create order on server using POST (order_master/)
-  Future<void> createOrder({
+   Future<void> createOrder({
     required int userId,
     required String date,
     required String orderFrom,
